@@ -29,11 +29,11 @@ function Surface:add_mesh(width, level)
 end
 
 --- read value at a point
-function Surface:sample(x, y)
+function Surface:sample(x, y, interpolation)
 	local value = 0
 	for o, octave in ipairs(self.octaves) do
 		local density = octave.mesh.width / self.width
-		value = value + octave.mesh:sample(x * density, y * density) * octave.level
+		value = value + octave.mesh:sample(x * density, y * density, interpolation) * octave.level
 	end
 	return value
 end
