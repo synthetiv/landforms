@@ -30,13 +30,11 @@ function Probe:sample()
 end
 
 function Probe:draw()
-	screen.circle(self.x, self.y, 6)
-	screen.blend_mode('exclusion')
-	screen.level(7)
+	screen.circle(self.x, self.y, 3 + self.value)
+	screen.level(0)
 	screen.fill()
-	screen.circle(self.x, self.y, 2.5)
-	screen.blend_mode('default')
-	screen.level(util.round(util.clamp((self.value * 2 + 1) / 2, 0, 1) * 15))
+	screen.circle(self.x, self.y, 1.5 + self.value)
+	screen.level(10)
 	screen.fill()
 end
 

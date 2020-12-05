@@ -29,12 +29,12 @@ levels = {
 	0.5
 }
 
-mosaic = Mosaic.new(4, screen_width, screen_height)
+mosaic = Mosaic.new(3, screen_width, screen_height)
 mosaic_dirty = true
 
 probe = Probe.new()
 
-scope = Scope.new(screen_width)
+scope = Scope.new(screen_width + 1)
 
 probe_clock = nil
 redraw_metro = nil
@@ -127,8 +127,8 @@ function draw_mosaic()
 	for x = 1, mosaic.width do
 		for y = 1, mosaic.height do
 			local value = (mosaic:get(x, y) + 1) / 2
-			screen.rect((x - 1) * mosaic.sample_size, (y - 1) * mosaic.sample_size, mosaic.sample_size, mosaic.sample_size)
-			screen.level(util.round(util.clamp(value, 0, 1) * 15))
+			screen.pixel((x - 1) * mosaic.sample_size, (y - 1) * mosaic.sample_size)
+			screen.level(util.round(util.clamp(value * value * value, 0, 1) * 15))
 			screen.fill()
 		end
 	end
@@ -136,12 +136,12 @@ end
 
 function redraw()
 	screen.clear()
-	screen.aa(0)
+	screen.aa(1)
 	screen.blend_mode('default')
 
 	draw_mosaic()
-	scope:draw()
 	probe:draw()
+	scope:draw()
 	
 	screen.update()
 end

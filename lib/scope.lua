@@ -25,19 +25,20 @@ end
 function Scope:draw()
 	for i = 1, self.buffer_size do
 		local value = self:read(1 - i)
-		local x = screen_width - (i - 1) * screen_width / self.buffer_size
+		local x = screen_width - (i - 1) * screen_width / (self.buffer_size - 1)
 		local y = screen_height / 2 - value * screen_height / 3
 		if i == 1 then
-			-- print(x, y)
 			screen.move(x, y)
 		else
 			screen.line(x, y)
 		end
 	end
 	screen.line_join('bevel')
-	screen.line_width(1.5)
-	screen.level(15)
+	screen.line_width(1.3)
+	screen.level(4)
+	screen.blend_mode('add')
 	screen.stroke()
+	screen.blend_mode('default')
 end
 
 return Scope
