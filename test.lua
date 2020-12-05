@@ -45,6 +45,15 @@ function tests.interpolate_smooth()
 	assert_equal(1, interpolate(0, 2, 0.5))
 end
 
+function tests.interpolate_smoother()
+	local interpolate = Mesh.interpolate_smoother
+	assert_equal(0.5, interpolate(0, 1, 0.5))
+	assert_equal(0, interpolate(0, 1, -1))
+	assert_equal(1, interpolate(0, 1, 2))
+	assert_equal(0, interpolate(0, 1, 0))
+	assert_equal(1, interpolate(0, 2, 0.5))
+end
+
 function tests.sample_noise()
 	local m = Mesh.new(8, 4)
 	-- should always be zero at nodes
