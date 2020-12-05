@@ -30,7 +30,6 @@ levels = {
 }
 
 mosaic = Mosaic.new(3, screen_width, screen_height)
-mosaic_dirty = true
 
 probe = Probe.new()
 
@@ -77,7 +76,7 @@ function init()
 			controlspec = controlspec.BIPOLAR,
 			action = function(value)
 				levels[o] = value
-				mosaic_dirty = true
+				mosaic:trigger_update()
 			end
 		}
 	end
@@ -104,42 +103,12 @@ function init()
 	frame_metro:start()
 end
 
-function build_mosaic()
-	mosaic:clear()
-	for x = 1, mosaic.width do
-		for y = 1, mosaic.height do
-			for o = 1, n_octaves do
-				local mesh = meshes[o]
-				local level = levels[o]
-				local value = mesh:sample((x - 0.5) * mesh.width / mosaic.width, (y - 0.5) * mesh.height / mosaic.height)
-				mosaic:add(x, y, value * level)
-			end
-		end
-	end
-end
-
-function draw_mosaic()
-	-- (re)build if necessary
-	if mosaic_dirty then
-		build_mosaic()
-		mosaic_dirty = false
-	end
-	for x = 1, mosaic.width do
-		for y = 1, mosaic.height do
-			local value = (mosaic:get(x, y) + 1) / 2
-			screen.pixel((x - 1) * mosaic.sample_size, (y - 1) * mosaic.sample_size)
-			screen.level(util.round(util.clamp(value * value * value, 0, 1) * 15))
-			screen.fill()
-		end
-	end
-end
-
 function redraw()
 	screen.clear()
 	screen.aa(1)
 	screen.blend_mode('default')
 
-	draw_mosaic()
+	mosaic:draw()
 	probe:draw()
 	scope:draw()
 	
