@@ -64,7 +64,6 @@ function Mesh:get_point_dot_product(sample_x, sample_y, node_x, node_y)
 	local node = self.nodes[node_x][node_y]
 	local dx = self:wrap_dx(sample_x - node_x)
 	local dy = self:wrap_dy(sample_y - node_y)
-	-- print(string.format('%f * %f - %f * %f', dx, node.y, node.y, dy))
 	return dx * node.y - node.x * dy
 end
 
@@ -82,7 +81,7 @@ function Mesh.interpolate_smooth(a, b, x)
 	return Mesh.interpolate_linear(a, b, x)
 end
 
---- interpolate between two values, v2
+--- interpolate between two values, v3
 -- aka 'smootherstep'
 function Mesh.interpolate_smoother(a, b, x)
 	-- no need to clamp here because sign is retained
@@ -100,7 +99,6 @@ function Mesh:sample(x, y, interpolation)
 	local xh = self:wrap_x(xl + 1)
 	local yl = self:wrap_y(math.floor(y))
 	local yh = self:wrap_y(yl + 1)
-	-- print(xl, xh, yl, yh)
 	-- get dot products
 	local dot_a = self:get_point_dot_product(x, y, xl, yl)
 	local dot_b = self:get_point_dot_product(x, y, xh, yl)

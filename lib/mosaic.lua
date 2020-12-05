@@ -50,6 +50,8 @@ function Mosaic:update()
 	self.needs_update = false
 	local cols_updated = 0
 	local center = util.round(self.width / 2)
+	-- TODO: what about "dissolving" instead of "wiping"?
+	-- create a table of all x/y coords ordered randomly, update in that order
 	for col = 1, self.width do
 		local direction = (col % 2) == 0 and -1 or 1
 		local x = math.floor(center + (col / 2) * direction)
