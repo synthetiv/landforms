@@ -3,13 +3,14 @@
 local Scope = {}
 Scope.__index = Scope
 
+Scope.buffer_size = 64
+
 function Scope.new(buffer_size)
 	local scope = {
 		head = 1,
-		buffer = {},
-		buffer_size = buffer_size
+		buffer = {}
 	}
-	for i = 1, buffer_size do
+	for i = 1, Scope.buffer_size do
 		scope.buffer[i] = 0
 	end
 	return setmetatable(scope, Scope)
@@ -27,10 +28,10 @@ function Scope:read(index)
 end
 
 --- draw waveform on screen
-function Scope:draw()
+function Scope:draw(width, level)
 	for i = 1, self.buffer_size do
 		local value = self:read(1 - i)
-		local x = screen_width - (i - 1) * screen_width / (self.buffer_size - 1)
+		local x = screen_width - i * screen_width / self.buffer_size
 		local y = screen_height / 2 - value * screen_height / 3
 		if i == 1 then
 			screen.move(x, y)
@@ -39,8 +40,8 @@ function Scope:draw()
 		end
 	end
 	screen.line_join('bevel')
-	screen.line_width(1.3)
-	screen.level(4)
+	screen.line_width(width)
+	screen.level(level)
 	screen.blend_mode('add')
 	screen.stroke()
 	screen.blend_mode('default')

@@ -1,6 +1,7 @@
 -- landforms: test
 
 Mesh = include 'lib/mesh'
+Vector = include 'lib/vector'
 
 function assert_equal(a, b)
 	if a ~= b then
@@ -61,6 +62,18 @@ function tests.sample_noise()
 	assert_equal(0, m:sample(1, 2))
 	-- don't actually assert this, it will be a random value:
 	-- assert_equal(0, m:sample(1.5, 1.5))
+end
+
+function tests.vector_math()
+	local v1 = Vector.new(0, 0)
+	local v2 = Vector.new(2, 3)
+	local v3 = v1 + v2
+	assert_equal(v3.x, 2)
+	assert_equal(v3.y, 3)
+	v3 = v1 - v2
+	assert_equal(v3.x, -2)
+	assert_equal(v3.y, -3)
+	assert_equal(v3.magnitude, math.sqrt(13))
 end
 
 -- btw, just for fun... to understand getupvalue()...

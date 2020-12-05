@@ -5,6 +5,7 @@ test = include 'test'
 Surface = include 'lib/surface'
 Mosaic = include 'lib/mosaic'
 Probe = include 'lib/probe'
+Boid = include 'lib/boid'
 Scope = include 'lib/scope'
 
 screen_width = 128
@@ -17,7 +18,11 @@ bpr_values = { 1/16, 1/12, 1/8, 1/6, 1/4, 1/3, 1/2,    1,     2,     4 }
 surface = Surface.new(screen_width)
 mosaic = Mosaic.new(3, screen_width, screen_height)
 probe = Probe.new()
-scope = Scope.new(screen_width + 1)
+scope = Scope.new()
+
+for i = 1, 3 do
+	Boid.new(screen_width / 2 + (math.random() - 0.5) * 30, screen_height / 2 + (math.random() - 0.5) * 30)
+end
 
 probe_clock = nil
 redraw_metro = nil
@@ -72,7 +77,6 @@ function init()
 			clock.sync(1 / 32)
 			tick = clock.get_beats()
 			probe:rotate(tick - last_tick)
-			scope:sample(probe.value)
 			last_tick = tick
 		end
 	end)
@@ -80,6 +84,8 @@ function init()
 	frame_metro = metro.init{
 		time = 1 / 16,
 		event = function()
+			Boid.update_all()
+			scope:sample(probe.value)
 			redraw()
 		end
 	}
@@ -92,8 +98,10 @@ function redraw()
 	screen.blend_mode('default')
 
 	mosaic:draw()
+	Boid.draw_all()
 	probe:draw()
-	scope:draw()
+	scope:draw(1.3, 7)
+	Boid.draw_scopes(1, 4)
 	
 	screen.update()
 end

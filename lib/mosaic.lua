@@ -48,6 +48,7 @@ function Mosaic:add(x, y, value)
 end
 
 --- update the whole mosaic (must be used in a coroutine)
+-- TODO: "shade" instead of just showing "elevation"?
 function Mosaic:update()
 	self.needs_update = false
 	local cols_updated = 0
