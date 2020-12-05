@@ -1,3 +1,5 @@
+--- a moving read point for a surface
+
 local Probe = {}
 Probe.__index = Probe
 
@@ -13,6 +15,7 @@ function Probe.new()
 	return setmetatable(probe, Probe)
 end
 
+--- move (change angle from center point)
 function Probe:rotate(beats)
 	self.angle = self.angle + beats * self.bpr * tau
 	self.angle = self.angle % tau
@@ -21,6 +24,7 @@ function Probe:rotate(beats)
 	self.value = surface:sample(self.x, self.y, 'smoother')
 end
 
+--- draw on screen
 function Probe:draw()
 	screen.circle(self.x, self.y, 3 + self.value)
 	screen.level(0)

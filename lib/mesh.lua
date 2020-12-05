@@ -1,3 +1,5 @@
+--- a mesh of perlin noise
+
 local Mesh = {}
 Mesh.__index = Mesh
 

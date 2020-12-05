@@ -1,3 +1,5 @@
+--- a waveform display of values
+
 local Scope = {}
 Scope.__index = Scope
 
@@ -13,15 +15,18 @@ function Scope.new(buffer_size)
 	return setmetatable(scope, Scope)
 end
 
+--- store a value in the ring buffer
 function Scope:sample(value)
 	self.head = self.head % self.buffer_size + 1
 	self.buffer[self.head] = value
 end
 
+--- read a value at an offset from `head`
 function Scope:read(index)
 	return self.buffer[(self.head + index - 1) % self.buffer_size + 1]
 end
 
+--- draw waveform on screen
 function Scope:draw()
 	for i = 1, self.buffer_size do
 		local value = self:read(1 - i)
