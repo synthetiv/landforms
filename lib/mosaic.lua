@@ -51,8 +51,8 @@ function Mosaic:update()
 	local cols_updated = 0
 	local center = util.round(self.width / 2)
 	for col = 1, self.width do
-		local direction = (col % 2) * 2 - 1
-		local x = util.round(center + (col / 2) * direction)
+		local direction = (col % 2) == 0 and -1 or 1
+		local x = math.floor(center + (col / 2) * direction)
 		for y = 1, self.height do
 			self:set(x, y, 0)
 			for o = 1, n_octaves do
