@@ -12,21 +12,19 @@ end
 tests = {}
 
 function tests.wrap()
-	local m = Mesh.new(8, 4)
-	assert_equal(8, m:wrap_x(0))
-	assert_equal(1, m:wrap_x(1))
-	assert_equal(8, m:wrap_x(8))
-	assert_equal(4, m:wrap_y(0))
-	assert_equal(1, m:wrap_y(1))
-	assert_equal(3, m:wrap_y(3))
+	local m = Mesh.new(8)
+	assert_equal(8, m:wrap(0))
+	assert_equal(1, m:wrap(1))
+	assert_equal(8, m:wrap(8))
+	assert_equal(3, m:wrap(3))
 end
 
 function tests.wrap_bidirectional()
-	local wrap = Mesh.wrap_bidirectional
-	assert_equal(0, wrap(0, 1))
-	assert_equal(0, wrap(2, 1))
-	assert_equal(0, wrap(-2, 1))
-	assert_equal(1, wrap(1, 2))
+	local m = Mesh.new(1)
+	assert_equal(0, m:wrap_bipolar(0))
+	assert_equal(0, m:wrap_bipolar(2))
+	assert_equal(0, m:wrap_bipolar(-2))
+	assert_equal(0.5, m:wrap_bipolar(0.5))
 end
 
 function tests.interpolate_linear()

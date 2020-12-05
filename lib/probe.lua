@@ -18,15 +18,7 @@ function Probe:rotate(beats)
 	self.angle = self.angle % tau
 	self.x = math.cos(self.angle) * self.radius + screen_width / 2
 	self.y = math.sin(self.angle) * self.radius + screen_height / 2
-end
-
-function Probe:sample()
-	self.value = 0
-	for o = 1, n_octaves do
-		local mesh = meshes[o]
-		self.value = self.value + mesh:sample(self.x * mesh.width / screen_width, self.y * mesh.height / screen_height, 'smooth') * levels[o]
-	end
-	return self.value
+	self.value = surface:sample(self.x, self.y)
 end
 
 function Probe:draw()

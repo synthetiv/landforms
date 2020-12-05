@@ -1,3 +1,5 @@
+--- a visual representation of a surface
+
 local Mosaic = {}
 Mosaic.__index = Mosaic
 
@@ -50,19 +52,14 @@ function Mosaic:update()
 	self.needs_update = false
 	local cols_updated = 0
 	local center = util.round(self.width / 2)
+	local density = surface.width / self.width
 	-- TODO: what about "dissolving" instead of "wiping"?
 	-- create a table of all x/y coords ordered randomly, update in that order
 	for col = 1, self.width do
 		local direction = (col % 2) == 0 and -1 or 1
 		local x = math.floor(center + (col / 2) * direction)
 		for y = 1, self.height do
-			self:set(x, y, 0)
-			for o = 1, n_octaves do
-				local mesh = meshes[o]
-				local level = levels[o]
-				local value = mesh:sample((x - 0.5) * mesh.width / self.width, (y - 0.5) * mesh.height / self.height)
-				self:add(x, y, value * level)
-			end
+			self:set(x, y, surface:sample(x * density, y * density))
 		end
 		cols_updated = cols_updated + 1
 		if cols_updated % self.cols_per_update == 0 then

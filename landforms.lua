@@ -2,7 +2,7 @@
 
 test = include 'test'
 
-Mesh = include 'lib/mesh'
+Surface = include 'lib/surface'
 Mosaic = include 'lib/mosaic'
 Probe = include 'lib/probe'
 Scope = include 'lib/scope'
@@ -14,25 +14,9 @@ n_octaves = 4
 bpr_labels = { '16', '12', '8', '6', '4', '3',  '2', '1', '1/2', '1/4' }
 bpr_values = { 1/16, 1/12, 1/8, 1/6, 1/4, 1/3, 1/2,    1,     2,     4 }
 
-meshes = {
-	Mesh.new(32, 16),
-	Mesh.new(16, 8),
-	Mesh.new(8, 4),
-	Mesh.new(4, 2)
-}
-
--- TODO: parameterize
-levels = {
-	0.3,
-	0.7,
-	1,
-	0.5
-}
-
+surface = Surface.new(screen_width)
 mosaic = Mosaic.new(3, screen_width, screen_height)
-
 probe = Probe.new()
-
 scope = Scope.new(screen_width + 1)
 
 probe_clock = nil
@@ -72,10 +56,10 @@ function init()
 			id = string.format('octave_%d_level', o),
 			name = string.format('octave %d level', o),
 			type = 'control',
-			default = levels[o],
+			default = surface.octaves[o].level,
 			controlspec = controlspec.BIPOLAR,
 			action = function(value)
-				levels[o] = value
+				surface.octaves[o].level = value
 				mosaic:trigger_update()
 			end
 		}
@@ -88,7 +72,6 @@ function init()
 			clock.sync(1 / 32)
 			tick = clock.get_beats()
 			probe:rotate(tick - last_tick)
-			probe:sample()
 			scope:sample(probe.value)
 			last_tick = tick
 		end
