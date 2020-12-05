@@ -4,7 +4,11 @@ test = include 'test'
 
 Mesh = include 'lib/mesh'
 Mosaic = include 'lib/mosaic'
+Probe = include 'lib/probe'
+Scope = include 'lib/scope'
 
+screen_width = 128
+screen_height = 64
 tau = math.pi * 2
 n_octaves = 4
 bpr_labels = { '16', '12', '8', '6', '4', '3',  '2', '1', '1/2', '1/4' }
@@ -25,12 +29,12 @@ levels = {
 	0.5
 }
 
-mosaic = Mosaic.new(4, 128, 64)
+mosaic = Mosaic.new(4, screen_width, screen_height)
 mosaic_dirty = true
 
-probe_bpr = 1/4
-probe_angle = 0
-probe_radius = 23
+probe = Probe.new()
+
+scope = Scope.new(screen_width)
 
 probe_clock = nil
 redraw_metro = nil
@@ -45,9 +49,9 @@ function init()
 		id = 'radius',
 		name = 'radius',
 		type = 'control',
-		controlspec = controlspec.new(1, 32, 'lin', 0, probe_radius),
+		controlspec = controlspec.new(1, 32, 'lin', 0, probe.radius),
 		action = function(value)
-			probe_radius = value
+			probe.radius = value
 		end
 	}
 	
@@ -56,8 +60,9 @@ function init()
 		name = 'beats per rotation',
 		type = 'option',
 		options = bpr_labels,
+		default = 3,
 		action = function(value)
-			probe_bpr = bpr_values[value]
+			probe.bpr = bpr_values[value]
 		end
 	}
 	
@@ -83,21 +88,20 @@ function init()
 		while true do
 			clock.sync(1 / 32)
 			tick = clock.get_beats()
-			probe_angle = probe_angle + (tick - last_tick) * probe_bpr * tau
-			probe_angle = probe_angle % tau
+			probe:rotate(tick - last_tick)
+			probe:sample()
+			scope:sample(probe.value)
 			last_tick = tick
 		end
 	end)
 	
-	redraw_metro = metro.init{
+	frame_metro = metro.init{
 		time = 1 / 16,
 		event = function()
 			redraw()
 		end
 	}
-	redraw_metro:start()
-
-	redraw()
+	frame_metro:start()
 end
 
 function build_mosaic()
@@ -130,37 +134,15 @@ function draw_mosaic()
 	end
 end
 
-function draw_probe()
-	-- screen.circle(64, 32, probe_radius)
-	-- screen.line_width(1)
-	-- screen.level(0)
-	-- screen.stroke()
-	local x = math.cos(probe_angle) * probe_radius + 64
-	local y = math.sin(probe_angle) * probe_radius + 32
-	screen.circle(x, y, 6)
-	screen.blend_mode('exclusion')
-	screen.level(7)
-	screen.fill()
-	local value = 0
-	for o = 1, n_octaves do
-		local mesh = meshes[o]
-		value = value + mesh:sample(x * mesh.width / 128, y * mesh.height / 64) * levels[o]
-	end
-	local level = (value * 2 + 1) / 2
-	screen.circle(x, y, 2.5)
-	screen.blend_mode('default')
-	screen.level(util.round(util.clamp(level, 0, 1) * 15))
-	screen.fill()
-end
-
 function redraw()
 	screen.clear()
 	screen.aa(0)
 	screen.blend_mode('default')
 
 	draw_mosaic()
-	draw_probe()
-
+	scope:draw()
+	probe:draw()
+	
 	screen.update()
 end
 
@@ -168,7 +150,7 @@ function cleanup()
 	if probe_clock ~= nil then
 		clock.cancel(probe_clock)
 	end
-	if redraw_metro ~= nil then
-		redraw_metro:stop()
+	if frame_metro ~= nil then
+		frame_metro:stop()
 	end
 end

@@ -91,7 +91,10 @@ function Mesh.interpolate_smoother(a, b, x)
 end
 
 --- get value at node (x, y)
-function Mesh:sample(x, y)
+function Mesh:sample(x, y, interpolation)
+	-- choose interpolation style
+	interpolation = interpolation or 'linear'
+	interpolate = Mesh['interpolate_' .. interpolation]
 	-- get corner coordinates
 	local xl = self:wrap_x(math.floor(x))
 	local xh = self:wrap_x(xl + 1)
@@ -104,10 +107,10 @@ function Mesh:sample(x, y)
 	local dot_c = self:get_point_dot_product(x, y, xh, yh)
 	local dot_d = self:get_point_dot_product(x, y, xl, yh)
 	-- interpolate vertically
-	local dot_l = Mesh.interpolate_linear(dot_a, dot_d, self:wrap_dy(y - yl))
-	local dot_r = Mesh.interpolate_linear(dot_b, dot_c, self:wrap_dy(y - yl))
+	local dot_l = interpolate(dot_a, dot_d, self:wrap_dy(y - yl))
+	local dot_r = interpolate(dot_b, dot_c, self:wrap_dy(y - yl))
 	-- interpolate horizontally
-	return Mesh.interpolate_linear(dot_l, dot_r, self:wrap_dx(x - xl))
+	return interpolate(dot_l, dot_r, self:wrap_dx(x - xl))
 end
 
 return Mesh
