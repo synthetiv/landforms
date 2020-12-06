@@ -96,25 +96,4 @@ function Mesh:sample(point, interpolation)
 	return interpolate(dot_l, dot_r, distance.x)
 end
 
---[[ TODO
--- get normal at point (x, y)
-function Mesh:get_normal(point, interpolation)
-	-- choose interpolation style
-	interpolation = interpolation or 'linear'
-	interpolate = Mesh['interpolate_' .. interpolation]
-	-- get corner coordinates
-	local xl = self:wrap(math.floor(x))
-	local xh = self:wrap(xl + 1)
-	local yl = self:wrap(math.floor(y))
-	local yh = self:wrap(yl + 1)
-	-- get distance for interpolation
-	local distance = point % 1
-	-- interpolate vertically
-	local normal_l = interpolate(self.nodes[xl][yl], self.nodes[xl][yh], distance.y)
-	local normal_r = interpolate(self.nodes[xl][yl], self.nodes[xl][yh], distance.y)
-	-- interpolate horizontall
-	return interpolate(normal_l, normal_r, distance.x)
-end
---]]
-
 return Mesh
