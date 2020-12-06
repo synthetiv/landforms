@@ -2,13 +2,13 @@
 
 local Vector = include 'lib/vector'
 
-local Mosaic = {}
-Mosaic.__index = Mosaic
+local Map = {}
+Map.__index = Map
 
 -- ordered set of coordinates to update with each iteration of the update coroutine:
 -- first iteration will update (1, 1) and (1 + width*n, 1 + height*n),
 -- second iteration will update (2, 3) and (2 + width*n, 3 + height*n), and so on
-Mosaic.dissolution_matrix = {
+Map.dissolution_matrix = {
 	size = 9,
 	width = 3,
 	height = 3,
@@ -23,8 +23,8 @@ Mosaic.dissolution_matrix = {
 	Vector.new(2, 2)
 }
 
-function Mosaic.new(sample_size, width, height)
-	local mosaic = {
+function Map.new(sample_size, width, height)
+	local map = {
 		sample_size = sample_size,
 		width = math.ceil(width / sample_size),
 		height = math.ceil(height / sample_size),
@@ -36,15 +36,15 @@ function Mosaic.new(sample_size, width, height)
 		coroutine_status = 'dead'
 	}
 	for x = 1, width do
-		mosaic.samples[x] = {}
+		map.samples[x] = {}
 	end
-	setmetatable(mosaic, Mosaic)
-	mosaic:clear()
-	return mosaic
+	setmetatable(map, Map)
+	map:clear()
+	return map
 end
 
 --- reset all samples
-function Mosaic:clear()
+function Map:clear()
 	for x = 1, self.width do
 		for y = 1, self.height do
 			self.samples[x][y] = 0
@@ -53,25 +53,25 @@ function Mosaic:clear()
 end
 
 --- get a sample
-function Mosaic:get(x, y)
+function Map:get(x, y)
 	return self.samples[x][y]
 end
 
 --- set a sample
-function Mosaic:set(x, y, value)
+function Map:set(x, y, value)
 	self.samples[x][y] = value
 end
 
 --- add to a sample
-function Mosaic:add(x, y, value)
+function Map:add(x, y, value)
 	self.samples[x][y] = self.samples[x][y] + value
 end
 
---- update the whole mosaic (must be used in a coroutine)
+--- update the whole map (must be used in a coroutine)
 -- TODO: "shade" instead of just showing "elevation"?
-function Mosaic:update()
+function Map:update()
 	self.needs_update = false
-	local matrix = Mosaic.dissolution_matrix
+	local matrix = Map.dissolution_matrix
 	-- TODO: might as well precalculate these
 	local cols = math.ceil(self.width / matrix.width)
 	local rows = math.ceil(self.height / matrix.height)
@@ -90,7 +90,7 @@ function Mosaic:update()
 end
 
 --- update a chunk
-function Mosaic:do_update()
+function Map:do_update()
 	if self.doing_update or self.needs_update then
 		if not self.doing_update then
 			self.coroutine = coroutine.create(function() self:update() end)
@@ -103,7 +103,7 @@ function Mosaic:do_update()
 end
 
 --- draw points
-function Mosaic:draw()
+function Map:draw()
 	-- (re)build if necessary
 	self:do_update()
 	-- draw
@@ -117,4 +117,4 @@ function Mosaic:draw()
 	end
 end
 
-return Mosaic
+return Map

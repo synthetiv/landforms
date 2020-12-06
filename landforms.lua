@@ -3,7 +3,7 @@
 test = include 'test'
 
 Surface = include 'lib/surface'
-Mosaic = include 'lib/mosaic'
+Map = include 'lib/map'
 Probe = include 'lib/probe'
 Boid = include 'lib/boid'
 Scope = include 'lib/scope'
@@ -16,7 +16,7 @@ bpr_labels = { '16', '12', '8', '6', '4', '3',  '2', '1', '1/2', '1/4' }
 bpr_values = { 1/16, 1/12, 1/8, 1/6, 1/4, 1/3, 1/2,    1,     2,     4 }
 
 surface = Surface.new(screen_width)
-mosaic = Mosaic.new(3, screen_width, screen_height)
+map = Map.new(3, screen_width, screen_height)
 probe = Probe.new()
 scope = Scope.new(1.3)
 
@@ -72,7 +72,7 @@ function init()
 			controlspec = controlspec.BIPOLAR,
 			action = function(value)
 				surface.octaves[o].level = value
-				mosaic.needs_update = true
+				map.needs_update = true
 			end
 		}
 	end
@@ -108,7 +108,7 @@ function redraw()
 	screen.aa(1)
 	screen.blend_mode('default')
 
-	mosaic:draw()
+	map:draw()
 	Boid.draw_all()
 	probe:draw()
 	scope:draw(1.3, 7)
