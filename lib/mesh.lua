@@ -31,17 +31,6 @@ function Mesh:wrap(n)
 	return (n - 1) % self.width + 1
 end
 
---- wrap to [-w/2, s/2]
-function Mesh:wrap_bipolar(n)
-	while n > self.width / 2 do
-		n = n - self.width
-	end
-	while n < -self.width / 2 do
-		n = n + self.width
-	end
-	return n
-end
-
 --- compute the dot product between `node`'s random vector and the distance between `node` and (x, y)
 function Mesh:get_point_dot_product(point, node_x, node_y)
 	local node = self.nodes[node_x][node_y]

@@ -20,14 +20,6 @@ function tests.wrap()
 	assert_equal(3, m:wrap(3))
 end
 
-function tests.wrap_bidirectional()
-	local m = Mesh.new(1)
-	assert_equal(0, m:wrap_bipolar(0))
-	assert_equal(0, m:wrap_bipolar(2))
-	assert_equal(0, m:wrap_bipolar(-2))
-	assert_equal(0.5, m:wrap_bipolar(0.5))
-end
-
 function tests.interpolate_linear()
 	local interpolate = Mesh.interpolate_linear
 	assert_equal(0.5, interpolate(0, 1, 0.5))
