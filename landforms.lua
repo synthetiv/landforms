@@ -72,7 +72,7 @@ function init()
 			controlspec = controlspec.BIPOLAR,
 			action = function(value)
 				surface.octaves[o].level = value
-				mosaic:trigger_update()
+				mosaic.needs_update = true
 			end
 		}
 	end

@@ -1,15 +1,35 @@
 --- a visual representation of a surface
 
+local Vector = include 'lib/vector'
+
 local Mosaic = {}
 Mosaic.__index = Mosaic
+
+-- ordered set of coordinates to update with each iteration of the update coroutine:
+-- first iteration will update (1, 1) and (1 + width*n, 1 + height*n),
+-- second iteration will update (2, 3) and (2 + width*n, 3 + height*n), and so on
+Mosaic.dissolution_matrix = {
+	size = 9,
+	width = 3,
+	height = 3,
+	Vector.new(1, 1),
+	Vector.new(2, 3),
+	Vector.new(3, 2),
+	Vector.new(2, 1),
+	Vector.new(1, 3),
+	Vector.new(3, 1),
+	Vector.new(1, 2),
+	Vector.new(3, 3),
+	Vector.new(2, 2)
+}
 
 function Mosaic.new(sample_size, width, height)
 	local mosaic = {
 		sample_size = sample_size,
 		width = math.ceil(width / sample_size),
 		height = math.ceil(height / sample_size),
+		density = surface.width * sample_size / width,
 		samples = {},
-		cols_per_update = 4,
 		needs_update = true,
 		doing_update = false,
 		coroutine = nil,
@@ -51,31 +71,27 @@ end
 -- TODO: "shade" instead of just showing "elevation"?
 function Mosaic:update()
 	self.needs_update = false
-	local cols_updated = 0
-	local center = util.round(self.width / 2)
-	local density = surface.width / self.width
-	-- TODO: what about "dissolving" instead of "wiping"?
-	-- create a table of all x/y coords ordered randomly, update in that order
-	for col = 1, self.width do
-		local direction = (col % 2) == 0 and -1 or 1
-		local x = math.floor(center + (col / 2) * direction)
-		for y = 1, self.height do
-			self:set(x, y, surface:sample(x * density, y * density))
+	local matrix = Mosaic.dissolution_matrix
+	-- TODO: might as well precalculate these
+	local cols = math.ceil(self.width / matrix.width)
+	local rows = math.ceil(self.height / matrix.height)
+	for matrix_point = 1, matrix.size do
+		local point = matrix[matrix_point]
+		for col = 1, cols do
+			for row = 1, rows do
+				local x = point.x + (col - 1) * matrix.width
+				local y = point.y + (row - 1) * matrix.height
+				self:set(x, y, surface:sample(x * self.density, y * self.density))
+			end
 		end
-		cols_updated = cols_updated + 1
-		if cols_updated % self.cols_per_update == 0 then
-			coroutine.yield()
-		end
-		if not self.doing_update then
-			error() -- exit this coroutine so another can begin
-		end
+		coroutine.yield()
 	end
 	self.doing_update = false
 end
 
 --- update a chunk
 function Mosaic:do_update()
-	if self.needs_update or self.doing_update then
+	if self.doing_update or self.needs_update then
 		if not self.doing_update then
 			self.coroutine = coroutine.create(function() self:update() end)
 			self.doing_update = true
@@ -84,12 +100,6 @@ function Mosaic:do_update()
 		local status = coroutine.status(self.coroutine)
 		self.doing_update = status ~= 'dead'
 	end
-end
-
---- cancel the current coroutine, if any, and get ready to start a new one
-function Mosaic:trigger_update()
-	self.needs_update = true
-	-- self.doing_update = false
 end
 
 --- draw points
