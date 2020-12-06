@@ -27,6 +27,13 @@ end
 probe_clock = nil
 redraw_metro = nil
 
+function crow.add()
+	crow.clear()
+	for o = 1, 4 do
+		crow.output[o].scale{ 0, 2, 3, 5, 7, 8, 10 }
+	end
+end
+
 function init()
 
 	test()
@@ -86,6 +93,10 @@ function init()
 		event = function()
 			Boid.update_all()
 			scope:sample(probe.value)
+			crow.output[1].volts = probe.value + 1
+			for o = 2, 4 do
+				crow.output[o].volts = Boid.boids[o - 1].value + 2
+			end
 			redraw()
 		end
 	}

@@ -16,6 +16,7 @@ function Boid.new(x, y)
 		position = Vector.new(x, y),
 		velocity = Vector.new(0, 0),
 		next_velocity = Vector.new(0, 0),
+		value = 0,
 		scope = Scope.new(math.floor(screen_width + (math.random() - 0.5) * 20))
 	}
 	Boid.n_boids = Boid.n_boids + 1
@@ -75,7 +76,8 @@ function Boid.update_all()
 	end
 	for i, boid in ipairs(Boid.boids) do
 		boid:update_position()
-		boid.scope:sample(surface:sample(boid.position.x, boid.position.y))
+		boid.value = surface:sample(boid.position.x, boid.position.y)
+		boid.scope:sample(boid.value)
 	end
 end
 
