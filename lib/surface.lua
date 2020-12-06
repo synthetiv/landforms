@@ -12,10 +12,10 @@ function Surface.new(width)
 		octaves = {}
 	}
 	setmetatable(surface, Surface)
-	surface:add_mesh(32, 0.3)
-	surface:add_mesh(16, 0.7)
-	surface:add_mesh(8, 1)
-	surface:add_mesh(4, 0.5)
+	surface:add_mesh(32, 0.125)
+	surface:add_mesh(16, 0.25)
+	surface:add_mesh(8, 0.5)
+	surface:add_mesh(4, 1)
 	return surface
 end
 
