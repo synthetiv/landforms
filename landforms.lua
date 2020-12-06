@@ -2,6 +2,7 @@
 
 test = include 'test'
 
+Vector = include 'lib/vector'
 Surface = include 'lib/surface'
 Map = include 'lib/map'
 Probe = include 'lib/probe'

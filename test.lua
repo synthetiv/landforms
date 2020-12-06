@@ -58,22 +58,40 @@ end
 function tests.sample_noise()
 	local m = Mesh.new(8, 4)
 	-- should always be zero at nodes
-	assert_equal(0, m:sample(1, 1))
-	assert_equal(0, m:sample(1, 2))
+	assert_equal(0, m:sample(Vector.new(1, 1)))
+	assert_equal(0, m:sample(Vector.new(1, 2)))
 	-- don't actually assert this, it will be a random value:
-	-- assert_equal(0, m:sample(1.5, 1.5))
+	-- assert_equal(0, m:sample(Vector.new(1.5, 1.5)))
 end
 
 function tests.vector_math()
 	local v1 = Vector.new(0, 0)
 	local v2 = Vector.new(2, 3)
 	local v3 = v1 + v2
-	assert_equal(v3.x, 2)
-	assert_equal(v3.y, 3)
+	assert_equal(2, v3.x)
+	assert_equal(3, v3.y)
 	v3 = v1 - v2
-	assert_equal(v3.x, -2)
-	assert_equal(v3.y, -3)
-	assert_equal(v3.magnitude, math.sqrt(13))
+	assert_equal(-2, v3.x)
+	assert_equal(-3, v3.y)
+	assert_equal(math.sqrt(13), v3.magnitude)
+end
+
+function tests.vector_wrapping()
+	local v1 = Vector.new(1, 1)
+	v1:wrap_to_square(3)
+	assert_equal(1, v1.x)
+	assert_equal(1, v1.y)
+	v1:wrap_to_square_bipolar(3)
+	assert_equal(1, v1.x)
+	assert_equal(1, v1.y)
+	local v2 = Vector.new(3, 3)
+	v2:wrap_to_square(2)
+	assert_equal(1, v2.x)
+	assert_equal(1, v2.y)
+	local v3 = Vector.new(4, 5)
+	v3:wrap_to_square_bipolar(3)
+	assert_equal(1, v3.x)
+	assert_equal(-1, v3.y)
 end
 
 -- btw, just for fun... to understand getupvalue()...

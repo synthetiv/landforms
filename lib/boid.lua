@@ -55,7 +55,7 @@ function Boid:update_velocity()
 	-- match flock velocity
 	self.next_velocity = self.next_velocity + (flock_velocity - self.velocity) / 128
 	-- gravitate toward the probe
-	self.next_velocity = self.next_velocity + (Vector.new(probe.x, probe.y) - self.position) / 128
+	self.next_velocity = self.next_velocity + (probe.position - self.position) / 128
 	-- limit overall velocity
 	local speed = self.next_velocity.magnitude
 	if speed > Boid.max_speed then
@@ -76,7 +76,7 @@ function Boid.update_all()
 	end
 	for i, boid in ipairs(Boid.boids) do
 		boid:update_position()
-		boid.value = surface:sample(boid.position.x, boid.position.y)
+		boid.value = surface:sample(boid.position)
 		boid.scope:sample(boid.value)
 	end
 end

@@ -1,7 +1,5 @@
 --- a visual representation of a surface
 
-local Vector = include 'lib/vector'
-
 local Map = {}
 Map.__index = Map
 
@@ -81,7 +79,7 @@ function Map:update()
 			for row = 1, rows do
 				local x = point.x + (col - 1) * matrix.width
 				local y = point.y + (row - 1) * matrix.height
-				self:set(x, y, surface:sample(x * self.density, y * self.density))
+				self:set(x, y, surface:sample(Vector.new(x, y) * self.density))
 			end
 		end
 		coroutine.yield()
@@ -96,9 +94,12 @@ function Map:do_update()
 			self.coroutine = coroutine.create(function() self:update() end)
 			self.doing_update = true
 		end
-		coroutine.resume(self.coroutine)
-		local status = coroutine.status(self.coroutine)
-		self.doing_update = status ~= 'dead'
+		local success, message = coroutine.resume(self.coroutine)
+		if not success and message ~= nil then
+			self.doing_update = false
+			self.needs_update = false
+			error(message)
+		end
 	end
 end
 

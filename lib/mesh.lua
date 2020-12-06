@@ -20,11 +20,8 @@ end
 function Mesh:randomize()
 	for x = 1, self.width do
 		for y = 1, self.width do
-			local angle = math.random() * 2 * math.pi
-			self.nodes[x][y] = {
-				x = math.cos(angle),
-				y = math.sin(angle)
-			}
+			local angle = math.random() * tau
+			self.nodes[x][y] = Vector.new(math.cos(angle), math.sin(angle))
 		end
 	end
 end
@@ -46,11 +43,11 @@ function Mesh:wrap_bipolar(n)
 end
 
 --- compute the dot product between `node`'s random vector and the distance between `node` and (x, y)
-function Mesh:get_point_dot_product(sample_x, sample_y, node_x, node_y)
+function Mesh:get_point_dot_product(point, node_x, node_y)
 	local node = self.nodes[node_x][node_y]
-	local dx = self:wrap_bipolar(sample_x - node_x)
-	local dy = self:wrap_bipolar(sample_y - node_y)
-	return dx * node.y - node.x * dy
+	local distance = point - Vector.new(node_x, node_y)
+	distance:wrap_to_square_bipolar(self.width)
+	return distance:get_dot_product(node)
 end
 
 --- interpolate between two values
@@ -75,8 +72,33 @@ function Mesh.interpolate_smoother(a, b, x)
 	return Mesh.interpolate_linear(a, b, x)
 end
 
---- get value at node (x, y)
-function Mesh:sample(x, y, interpolation)
+--- get value at point (x, y)
+function Mesh:sample(point, interpolation)
+	-- choose interpolation style
+	interpolation = interpolation or 'linear'
+	interpolate = Mesh['interpolate_' .. interpolation]
+	-- get corner coordinates
+	local xl = self:wrap(math.floor(point.x))
+	local xh = self:wrap(xl + 1)
+	local yl = self:wrap(math.floor(point.y))
+	local yh = self:wrap(yl + 1)
+	-- get dot products
+	local dot_a = self:get_point_dot_product(point, xl, yl)
+	local dot_b = self:get_point_dot_product(point, xh, yl)
+	local dot_c = self:get_point_dot_product(point, xh, yh)
+	local dot_d = self:get_point_dot_product(point, xl, yh)
+	-- get distance for interpolation
+	local distance = point % 1
+	-- interpolate vertically
+	local dot_l = interpolate(dot_a, dot_d, distance.y)
+	local dot_r = interpolate(dot_b, dot_c, distance.y)
+	-- interpolate horizontally
+	return interpolate(dot_l, dot_r, distance.x)
+end
+
+--[[ TODO
+-- get normal at point (x, y)
+function Mesh:get_normal(point, interpolation)
 	-- choose interpolation style
 	interpolation = interpolation or 'linear'
 	interpolate = Mesh['interpolate_' .. interpolation]
@@ -85,16 +107,14 @@ function Mesh:sample(x, y, interpolation)
 	local xh = self:wrap(xl + 1)
 	local yl = self:wrap(math.floor(y))
 	local yh = self:wrap(yl + 1)
-	-- get dot products
-	local dot_a = self:get_point_dot_product(x, y, xl, yl)
-	local dot_b = self:get_point_dot_product(x, y, xh, yl)
-	local dot_c = self:get_point_dot_product(x, y, xh, yh)
-	local dot_d = self:get_point_dot_product(x, y, xl, yh)
+	-- get distance for interpolation
+	local distance = point % 1
 	-- interpolate vertically
-	local dot_l = interpolate(dot_a, dot_d, self:wrap_bipolar(y - yl))
-	local dot_r = interpolate(dot_b, dot_c, self:wrap_bipolar(y - yl))
-	-- interpolate horizontally
-	return interpolate(dot_l, dot_r, self:wrap_bipolar(x - xl))
+	local normal_l = interpolate(self.nodes[xl][yl], self.nodes[xl][yh], distance.y)
+	local normal_r = interpolate(self.nodes[xl][yl], self.nodes[xl][yh], distance.y)
+	-- interpolate horizontall
+	return interpolate(normal_l, normal_r, distance.x)
 end
+--]]
 
 return Mesh
