@@ -18,7 +18,7 @@ bpr_values = { 1/16, 1/12, 1/8, 1/6, 1/4, 1/3, 1/2,    1,     2,     4 }
 surface = Surface.new(screen_width)
 mosaic = Mosaic.new(3, screen_width, screen_height)
 probe = Probe.new()
-scope = Scope.new()
+scope = Scope.new(1.3)
 
 for i = 1, 3 do
 	Boid.new(screen_width / 2 + (math.random() - 0.5) * 30, screen_height / 2 + (math.random() - 0.5) * 30)

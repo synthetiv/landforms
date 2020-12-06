@@ -17,7 +17,7 @@ function Boid.new(x, y)
 		velocity = Vector.new(0, 0),
 		next_velocity = Vector.new(0, 0),
 		value = 0,
-		scope = Scope.new(math.floor(screen_width + (math.random() - 0.5) * 20))
+		scope = Scope.new(1 + 0.1 * Boid.n_boids)
 	}
 	Boid.n_boids = Boid.n_boids + 1
 	Boid.boids[Boid.n_boids] = boid

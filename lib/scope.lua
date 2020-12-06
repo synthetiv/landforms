@@ -5,8 +5,9 @@ Scope.__index = Scope
 
 Scope.buffer_size = 64
 
-function Scope.new(buffer_size)
+function Scope.new(scale)
 	local scope = {
+		scale = scale or 1,
 		head = 1,
 		buffer = {}
 	}
@@ -31,12 +32,14 @@ end
 function Scope:draw(width, level)
 	for i = 1, self.buffer_size do
 		local value = self:read(1 - i)
-		local x = screen_width - i * screen_width / self.buffer_size
-		local y = screen_height / 2 - value * screen_height / 3
-		if i == 1 then
-			screen.move(x, y)
-		else
-			screen.line(x, y)
+		local x = screen_width - i * screen_width * self.scale / self.buffer_size
+		if x >= 0 then
+			local y = screen_height / 2 - value * screen_height / 3
+			if i == 1 then
+				screen.move(x, y)
+			else
+				screen.line(x, y)
+			end
 		end
 	end
 	screen.line_join('bevel')
