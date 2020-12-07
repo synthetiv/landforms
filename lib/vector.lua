@@ -102,7 +102,7 @@ function Vector:rotate(theta)
 	return Vector.new_polar(self.magnitude, (self.angle + theta) % tau)
 end
 
---- rotate to a particular angle, ignoring magnitude
+--- rotate to a particular angle
 function Vector:rotate_to(theta, amount)
 	theta = theta % tau
 	local angle = self.angle % tau

@@ -5,8 +5,6 @@ local Mesh = include 'lib/mesh'
 local Surface = {}
 Surface.__index = Surface
 
--- Surface.mesh_offset = Vector.new(0.5, 0.5) -- translate all meshes by this much so nodes aren't in screen corners
-
 function Surface.new(width)
 	local surface = {
 		width = width,
@@ -26,6 +24,9 @@ function Surface.new(width)
 	surface:add_mesh(6, 0.5, 0.25)
 	surface:add_mesh(12, 0.5, 0.5)
 	surface:add_mesh(24, 0.5, 1)
+	-- TODO: it would look nice to add another lower octave...
+	-- but you'd need to optimize sampling / map updates more
+	-- surface:add_mesh(48, 0.5, 2)
 	return surface
 end
 
