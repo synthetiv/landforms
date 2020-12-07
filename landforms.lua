@@ -22,6 +22,9 @@ probe = Probe.new()
 scope = Scope.new(1.3)
 
 cursor = Vector.new(screen_width / 2, screen_height / 2)
+cursor_octave = 3
+
+held_keys = { false, false, false }
 
 for i = 1, 3 do
 	Boid.new(screen_width / 2 + (math.random() - 0.5) * 30, screen_height / 2 + (math.random() - 0.5) * 30)
@@ -38,20 +41,38 @@ function crow.add()
 end
 
 function enc(n, d)
-	if n == 2 then
-		cursor.x = util.clamp(cursor.x + d, 0, screen_width)
-	elseif n == 3 then
-		cursor.y = util.clamp(cursor.y - d, 0, screen_height)
+	if held_keys[2] and not held_keys[3] then
+		if n == 2 then
+			cursor_octave = util.clamp(cursor_octave + d, 1, surface.n_octaves)
+		end
+	elseif held_keys[3] then
+		if n == 3 then
+			surface:edit(cursor, cursor_octave, d * -0.1)
+		end
+	else
+		if n == 2 then
+			cursor.x = util.clamp(cursor.x + d, 0, screen_width)
+		elseif n == 3 then
+			cursor.y = util.clamp(cursor.y - d, 0, screen_height)
+		end
 	end
 end
 
 function key(n, z)
-	if z == 1 then
-		if n == 2 then
-			surface:edit(cursor, 3, -1)
-		elseif n == 3 then
-			surface:edit(cursor, 3, 1)
-		end
+	held_keys[n] = z == 1
+	if n == 2 and z == 1 then
+		norns.enc.sens(2, 12)
+		norns.enc.accel(false)
+	else
+		norns.enc.sens(2, 2)
+		norns.enc.accel(2, true)
+	end
+	if n == 3 and z == 1 then
+		norns.enc.sens(3, 2)
+		norns.enc.accel(3, false)
+	else
+		norns.enc.sens(3, 2)
+		norns.enc.accel(3, true)
 	end
 end
 
@@ -124,6 +145,32 @@ function init()
 	frame_metro:start()
 end
 
+function draw_cursor()
+	local mesh_cursor = surface:transform_screen_point(cursor, cursor_octave)
+	local xl = math.floor(mesh_cursor.x)
+	local yl = math.floor(mesh_cursor.y)
+	local min_point = surface:transform_mesh_point(Vector.new(xl, yl), cursor_octave)
+	local max_point = surface:transform_mesh_point(Vector.new(xl + 1, yl + 1), cursor_octave)
+	-- cell edges
+	screen.rect(min_point.x + 0.5, min_point.y + 0.5, max_point.x - min_point.x, max_point.y - min_point.y)
+	screen.aa(0)
+	screen.blend_mode('add')
+	screen.level(1)
+	screen.stroke()
+	-- corners
+	screen.pixel(min_point.x, min_point.y)
+	screen.pixel(max_point.x, min_point.y)
+	screen.pixel(max_point.x, max_point.y)
+	screen.pixel(min_point.x, max_point.y)
+	screen.level(8)
+	screen.fill()
+	-- point cursor
+	screen.aa(1)
+	screen.circle(cursor.x, cursor.y, 2)
+	screen.level(4)
+	screen.fill()
+end
+
 function redraw()
 	screen.clear()
 	screen.aa(1)
@@ -134,10 +181,7 @@ function redraw()
 	probe:draw()
 	-- scope:draw(1.3, 7)
 	-- Boid.draw_scopes(1, 4)
-	screen.circle(cursor.x, cursor.y, 3)
-	screen.line_width(1)
-	screen.level(10)
-	screen.stroke()
+	draw_cursor()
 	
 	screen.update()
 end
