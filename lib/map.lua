@@ -10,15 +10,15 @@ Map.dissolution_matrix = {
 	size = 9,
 	width = 3,
 	height = 3,
-	Vector.new(1, 1),
-	Vector.new(2, 3),
-	Vector.new(3, 2),
-	Vector.new(2, 1),
-	Vector.new(1, 3),
-	Vector.new(3, 1),
+	Vector.new(0, 0),
 	Vector.new(1, 2),
-	Vector.new(3, 3),
-	Vector.new(2, 2)
+	Vector.new(2, 1),
+	Vector.new(1, 0),
+	Vector.new(0, 2),
+	Vector.new(2, 0),
+	Vector.new(0, 1),
+	Vector.new(2, 2),
+	Vector.new(1, 1)
 }
 
 function Map.new(sample_size, width, height)
@@ -52,17 +52,12 @@ end
 
 --- get a sample
 function Map:get(x, y)
-	return self.samples[x][y]
+	return self.samples[x + 1][y + 1]
 end
 
 --- set a sample
 function Map:set(x, y, value)
-	self.samples[x][y] = value
-end
-
---- add to a sample
-function Map:add(x, y, value)
-	self.samples[x][y] = self.samples[x][y] + value
+	self.samples[x + 1][y + 1] = value
 end
 
 --- update the whole map (must be used in a coroutine)
@@ -108,10 +103,10 @@ function Map:draw()
 	-- (re)build if necessary
 	self:do_update()
 	-- draw
-	for x = 1, self.width do
-		for y = 1, self.height do
+	for x = 0, self.width - 1 do
+		for y = 0, self.height -1 do
 			local value = (self:get(x, y) + 1) / 2
-			screen.pixel((x - 1) * self.sample_size, (y - 1) * self.sample_size)
+			screen.pixel(x * self.sample_size, y * self.sample_size)
 			screen.level(util.round(util.clamp(value * value * value, 0, 1) * 15))
 			screen.fill()
 		end
