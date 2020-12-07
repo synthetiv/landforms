@@ -11,6 +11,8 @@ Scope = include 'lib/scope'
 
 screen_width = 128
 screen_height = 64
+half_width = 64
+half_height = 32
 tau = math.pi * 2
 n_octaves = 4
 bpr_labels = { '16', '12', '8', '6', '4', '3',  '2', '1', '1/2', '1/4' }
@@ -21,8 +23,12 @@ map = Map.new(3, screen_width, screen_height)
 probe = Probe.new()
 scope = Scope.new(1.3)
 
-cursor = Vector.new(screen_width / 2, screen_height / 2)
+cursor = Vector.new(half_width, half_height)
 cursor_octave = 3
+cursor_bounds = {
+	min = Vector.new(half_width, half_height),
+	max = Vector.new(half_width, half_height)
+}
 
 held_keys = { false, false, false }
 
@@ -149,26 +155,30 @@ function draw_cursor()
 	local mesh_cursor = surface:transform_screen_point(cursor, cursor_octave)
 	local xl = math.floor(mesh_cursor.x)
 	local yl = math.floor(mesh_cursor.y)
-	local min_point = surface:transform_mesh_point(Vector.new(xl, yl), cursor_octave)
-	local max_point = surface:transform_mesh_point(Vector.new(xl + 1, yl + 1), cursor_octave)
+	local min = surface:transform_mesh_point(Vector.new(xl, yl), cursor_octave)
+	local max = surface:transform_mesh_point(Vector.new(xl + 1, yl + 1), cursor_octave)
+	cursor_bounds.min = cursor_bounds.min + (min - cursor_bounds.min) * 0.75
+	cursor_bounds.max = cursor_bounds.max + (max - cursor_bounds.max) * 0.75
+	min = cursor_bounds.min
+	max = cursor_bounds.max
 	-- cell edges
-	screen.rect(min_point.x + 0.5, min_point.y + 0.5, max_point.x - min_point.x, max_point.y - min_point.y)
+	screen.rect(min.x + 0.5, min.y + 0.5, max.x - min.x, max.y - min.y)
 	screen.aa(0)
 	screen.blend_mode('add')
 	screen.level(1)
 	screen.stroke()
 	-- corners
-	screen.pixel(min_point.x, min_point.y)
-	screen.pixel(max_point.x, min_point.y)
-	screen.pixel(max_point.x, max_point.y)
-	screen.pixel(min_point.x, max_point.y)
+	screen.pixel(min.x, min.y)
+	screen.pixel(max.x, min.y)
+	screen.pixel(max.x, max.y)
+	screen.pixel(min.x, max.y)
 	screen.level(8)
 	screen.fill()
 	-- point cursor
 	screen.aa(1)
-	screen.circle(cursor.x, cursor.y, 2)
-	screen.level(4)
-	screen.fill()
+	screen.circle(cursor.x, cursor.y, surface.octaves[cursor_octave].sample_size / 4)
+	screen.level(3)
+	screen.stroke()
 end
 
 function redraw()

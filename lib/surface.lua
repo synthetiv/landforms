@@ -12,14 +12,6 @@ function Surface.new(width)
 		octaves = {}
 	}
 	setmetatable(surface, Surface)
-	-- TODO: these offsets allow cursor grid lines to line up,
-	-- but they also line up the nodes and that may not look great
-	--[[
-	surface:add_mesh(3, 0, 0.125)
-	surface:add_mesh(6, 0.5, 0.25)
-	surface:add_mesh(12, 0.75, 0.5)
-	surface:add_mesh(24, 0.875, 1)
-	--]]
 	surface:add_mesh(3, 0.5, 0.125)
 	surface:add_mesh(6, 0.5, 0.25)
 	surface:add_mesh(12, 0.5, 0.5)
@@ -36,6 +28,7 @@ function Surface:add_mesh(sample_size, offset, level)
 	local mesh_width = math.ceil(screen_width / sample_size)
 	self.octaves[self.n_octaves] = {
 		mesh = Mesh.new(mesh_width),
+		sample_size = sample_size,
 		density = 1 / sample_size,
 		offset = Vector.new(offset, offset),
 		level = level
