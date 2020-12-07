@@ -63,7 +63,7 @@ end
 --- change something
 function Surface:edit(point, o, delta)
 	local mesh = self.octaves[o].mesh
-	mesh:edit(self:transform_screen_point(point, o), delta)
+	mesh:edit(self:transform_screen_point(point, o), delta / self.octaves[o].level)
 	map.needs_update = true
 end
 
