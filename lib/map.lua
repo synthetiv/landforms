@@ -111,6 +111,23 @@ function Map:draw()
 			screen.fill()
 		end
 	end
+	--[[
+	-- draw gradient vectors at nodes
+	local mesh = surface.octaves[3].mesh
+	local density = mesh.width / surface.width
+	for x = 1, mesh.width do
+		for y = 1, mesh.width do
+			local node = mesh.nodes[x][y]
+			local v = Vector.new(node.x, node.y)
+			v.magnitude = 7
+			screen.move(x / density, y / density)
+			screen.line_rel(v.x, v.y)
+			screen.level(15)
+			screen.line_width(0.5)
+			screen.stroke()
+		end
+	end
+	--]]
 end
 
 return Map

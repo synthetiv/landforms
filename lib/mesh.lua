@@ -21,7 +21,9 @@ function Mesh:randomize()
 	for x = 1, self.width do
 		for y = 1, self.width do
 			local angle = math.random() * tau
-			self.nodes[x][y] = Vector.new(math.cos(angle), math.sin(angle))
+			local node = Vector.new_polar(1, angle)
+			node:rectangularize()
+			self.nodes[x][y] = node
 		end
 	end
 end
@@ -83,6 +85,30 @@ function Mesh:sample(point, interpolation)
 	local dot_r = interpolate(dot_b, dot_c, distance.y)
 	-- interpolate horizontally
 	return interpolate(dot_l, dot_r, distance.x)
+end
+
+--- change nodes to increase/decrease value at point (x, y)
+function Mesh:edit(point, delta)
+	-- get corner coordinates
+	local xl = math.floor(point.x)
+	local yl = math.floor(point.y)
+	-- change nearby nodes' angles to be perpendicular to the angle of `point - node`
+	-- for a lower value at `point`, node gradient vector to node-point vector angle should be math.pi/2 (clockwise)
+	-- for a higher value, angle should be -math.pi/2 (counterclockwise)
+	local target_angle = math.pi / 2
+	for x_offset = 0, 1 do
+		for y_offset = 0, 1 do
+			local x = self:wrap(xl + x_offset)
+			local y = self:wrap(yl + y_offset)
+			local distance_vector = (point - Vector.new(x, y))
+			distance_vector:wrap_to_square_bipolar(self.width)
+			local node = self.nodes[x][y]
+			local proximity = math.max(0, 1 - distance_vector.magnitude)
+			node = node:rotate_to(distance_vector.angle + target_angle, delta * proximity)
+			node:rectangularize() -- otherwise map:update() get slower as more polar vectors are added
+			self.nodes[x][y] = node
+		end
+	end
 end
 
 return Mesh

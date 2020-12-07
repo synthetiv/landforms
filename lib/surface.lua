@@ -38,4 +38,12 @@ function Surface:sample(point, interpolation)
 	return value
 end
 
+--- change something
+function Surface:edit(point, octave, delta)
+	local mesh = self.octaves[octave].mesh
+	local density = mesh.width / self.width
+	mesh:edit(point * density, delta)
+	map.needs_update = true
+end
+
 return Surface

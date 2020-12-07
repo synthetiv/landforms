@@ -4,6 +4,12 @@ Mesh = include 'lib/mesh'
 Vector = include 'lib/vector'
 
 function assert_equal(a, b)
+	if type(a) == 'number' then
+		a = util.round(a, 0.0001)
+	end
+	if type(b) == 'number' then
+		b = util.round(b, 0.0001)
+	end
 	if a ~= b then
 		-- local _, caller_name = debug.getupvalue(debug.getinfo(3).func, 1)
 		error(debug.traceback(string.format('expected %s, got %s', a, b), 2))
@@ -84,6 +90,63 @@ function tests.vector_wrapping()
 	v3:wrap_to_square_bipolar(3)
 	assert_equal(1, v3.x)
 	assert_equal(-1, v3.y)
+end
+
+function tests.vector_angles()
+	local v1 = Vector.new(1, 0)
+	assert_equal(0, v1.angle)
+	local v2 = Vector.new(1, 1)
+	assert_equal(math.pi / 4, v2.angle)
+	local v3 = Vector.new(0, 1)
+	assert_equal(math.pi / 2, v3.angle)
+	local v4 = Vector.new(-1, -1)
+	assert_equal(math.pi * 5 / 4, v4.angle)
+	local v5 = Vector.new(1, -1)
+	assert_equal(math.pi * 7 / 4, v5.angle)
+	local v6 = v1:rotate(math.pi)
+	assert_equal(-1, v6.x)
+	assert_equal(0, v6.y)
+	local v7 = v2:rotate(-math.pi)
+	assert_equal(-1, v7.x)
+	assert_equal(-1, v7.y)
+	local v8 = v3:rotate(math.pi / 2)
+	assert_equal(-1, v8.x)
+	assert_equal(0, v8.y)
+	local v9 = v4:rotate(math.pi / 2)
+	assert_equal(1, v9.x)
+	assert_equal(-1, v9.y)
+	local v10 = v8:rotate(math.pi)
+	assert_equal(0, v10.angle)
+end
+
+function tests.vector_rotation_to()
+	local v1 = Vector.new_polar(1, 0)
+	local v2 = v1:rotate_to(2, 0.5)
+	assert_equal(1, v2.angle, 1)
+	local v3 = v1:rotate_to(math.pi, 0.5)
+	assert_equal(math.pi * 3 / 2, v3.angle) -- math.pi / 2 would be fine too but whatever, direction chosen is arbitrary
+	local v4 = v3:rotate_to(math.pi, 0.5)
+	assert_equal(math.pi * 5 / 4, v4.angle)
+	local v5 = v1:rotate_to(math.pi / 2, 1)
+	assert_equal(math.pi / 2, v5.angle)
+	local v6 = v1:rotate_to(math.pi / 2, -1)
+	assert_equal(math.pi * 3 / 2, v6.angle)
+end
+
+function tests.vector_rotation_to_rectangular()
+	-- same as above, but using rectangular coordinates internally
+	local v1 = Vector.new(1, 0)
+	local v2 = v1:rotate_to(2, 0.5)
+	assert_equal(1, v2.angle, 1)
+	local v3 = v1:rotate_to(math.pi, 0.5)
+	assert_equal(math.pi * 3 / 2, v3.angle)
+	v3 = Vector.new(v3.x, v3.y)
+	local v4 = v3:rotate_to(math.pi, 0.5)
+	assert_equal(math.pi * 5 / 4, v4.angle)
+	local v5 = v1:rotate_to(math.pi / 2, 1)
+	assert_equal(math.pi / 2, v5.angle)
+	local v6 = v1:rotate_to(math.pi / 2, -1)
+	assert_equal(math.pi * 3 / 2, v6.angle)
 end
 
 -- btw, just for fun... to understand getupvalue()...

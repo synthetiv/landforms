@@ -21,6 +21,8 @@ map = Map.new(3, screen_width, screen_height)
 probe = Probe.new()
 scope = Scope.new(1.3)
 
+cursor = Vector.new(screen_width / 2, screen_height / 2)
+
 for i = 1, 3 do
 	Boid.new(screen_width / 2 + (math.random() - 0.5) * 30, screen_height / 2 + (math.random() - 0.5) * 30)
 end
@@ -32,6 +34,24 @@ function crow.add()
 	crow.clear()
 	for o = 1, 4 do
 		crow.output[o].scale{ 0, 2, 3, 5, 7, 8, 10 }
+	end
+end
+
+function enc(n, d)
+	if n == 2 then
+		cursor.x = util.clamp(cursor.x + d, 0, screen_width)
+	elseif n == 3 then
+		cursor.y = util.clamp(cursor.y - d, 0, screen_height)
+	end
+end
+
+function key(n, z)
+	if z == 1 then
+		if n == 2 then
+			surface:edit(cursor, 3, -1)
+		elseif n == 3 then
+			surface:edit(cursor, 3, 1)
+		end
 	end
 end
 
@@ -112,8 +132,12 @@ function redraw()
 	map:draw()
 	Boid.draw_all()
 	probe:draw()
-	scope:draw(1.3, 7)
-	Boid.draw_scopes(1, 4)
+	-- scope:draw(1.3, 7)
+	-- Boid.draw_scopes(1, 4)
+	screen.circle(cursor.x, cursor.y, 3)
+	screen.line_width(1)
+	screen.level(10)
+	screen.stroke()
 	
 	screen.update()
 end
