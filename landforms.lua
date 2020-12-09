@@ -153,6 +153,8 @@ end
 
 function draw_cursor()
 	local mesh_cursor = surface:transform_screen_point(cursor, cursor_octave)
+	-- TODO: xl/yl hysteresis: don't move bounds until cursor fully crosses them,
+	-- but always animate
 	local xl = math.floor(mesh_cursor.x)
 	local yl = math.floor(mesh_cursor.y)
 	local min = surface:transform_mesh_point(Vector.new(xl, yl), cursor_octave)
@@ -176,8 +178,8 @@ function draw_cursor()
 	screen.fill()
 	-- point cursor
 	screen.aa(1)
-	screen.circle(cursor.x, cursor.y, surface.octaves[cursor_octave].sample_size / 4)
-	screen.level(3)
+	screen.circle(cursor.x, cursor.y, (max.x - min.x) / 4)
+	screen.level(2)
 	screen.stroke()
 end
 

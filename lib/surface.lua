@@ -28,7 +28,6 @@ function Surface:add_mesh(sample_size, offset, level)
 	local mesh_width = math.ceil(screen_width / sample_size)
 	self.octaves[self.n_octaves] = {
 		mesh = Mesh.new(mesh_width),
-		sample_size = sample_size,
 		density = 1 / sample_size,
 		offset = Vector.new(offset, offset),
 		level = level
