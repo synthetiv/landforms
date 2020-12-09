@@ -80,6 +80,8 @@ function Vec2:__index(index)
 	elseif index == 'y' then
 		local _, y = Vec2.pol2rec(self.magnitude, self.angle)
 		return y
+	elseif index == 'z' then
+		return 0
 	end
 	return Vec2[index]
 end
@@ -94,6 +96,8 @@ function Vec2:__newindex(index, value)
 		self.magnitude, self.angle = Vec2.rec2pol(value, self.y)
 	elseif index == 'y' then
 		self.magnitude, self.angle = Vec2.rec2pol(self.x, value)
+	elseif index == 'z' then
+		error('trying to set z of 2D vector')
 	end
 end
 

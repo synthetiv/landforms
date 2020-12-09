@@ -74,7 +74,7 @@ function Map:update()
 			for row = 1, rows do
 				local x = point.x + (col - 1) * matrix.width
 				local y = point.y + (row - 1) * matrix.height
-				self:set(x, y, surface:sample(Vec2.new(x, y) * self.density))
+				self:set(x, y, surface:sample_raw(Vec2.new(x, y) * self.density))
 			end
 		end
 		coroutine.yield()

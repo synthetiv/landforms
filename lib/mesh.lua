@@ -35,6 +35,10 @@ end
 
 --- compute the dot product between `node`'s random vector and the distance between `node` and (x, y)
 function Mesh:get_point_dot_product(point, node_x, node_y)
+	if self.nodes[node_x] == nil or self.nodes[node_x][node_y] == nil then
+		debug.debug()
+		print('nil node', node_x, node_y)
+	end
 	local node = self.nodes[node_x][node_y]
 	local distance = point - Vec2.new(node_x, node_y)
 	distance:wrap_to_square_bipolar(self.width)

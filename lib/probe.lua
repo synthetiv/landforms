@@ -5,7 +5,9 @@ Probe.__index = Probe
 
 function Probe.new()
 	local probe = {
-		position = Vec2.new(0, 0),
+		position = Vec3.new(screen_width / 2, screen_height / 2, 10),
+		ground_level = 0,
+		altitude = 10,
 		bpr = 1/4,
 		angle = 0,
 		radius = 23,
@@ -20,16 +22,17 @@ function Probe:rotate(beats)
 	self.angle = self.angle % tau
 	self.position.x = math.cos(self.angle) * self.radius + screen_width / 2
 	self.position.y = math.sin(self.angle) * self.radius + screen_height / 2
-	self.value = surface:sample(self.position, 'smoother')
+	self.ground_level = surface:sample(self.position, 'smoother')
+	self.position.z = self.ground_level + self.altitude
 end
 
 --- draw on screen
 function Probe:draw()
 	local x, y = self.position.x, self.position.y
-	screen.circle(x, y, 3 + self.value)
+	screen.circle(x, y, 3 + self.position.z / 32)
 	screen.level(0)
 	screen.fill()
-	screen.circle(x, y, 1.5 + self.value)
+	screen.circle(x, y, 1.5 + self.position.z / 32)
 	screen.level(10)
 	screen.fill()
 end

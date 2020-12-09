@@ -3,6 +3,7 @@
 test = include 'test'
 
 Vec2 = include 'lib/vec2'
+Vec3 = include 'lib/vec3'
 Surface = include 'lib/surface'
 Map = include 'lib/map'
 Probe = include 'lib/probe'
@@ -33,7 +34,7 @@ cursor_bounds = {
 held_keys = { false, false, false }
 
 for i = 1, 3 do
-	Boid.new(screen_width / 2 + (math.random() - 0.5) * 30, screen_height / 2 + (math.random() - 0.5) * 30)
+	Boid.new(screen_width / 2 + (math.random() - 0.5) * 30, screen_height / 2 + (math.random() - 0.5) * 30, (math.random() - 0.5) * 20 + 10)
 end
 
 probe_clock = nil
@@ -146,9 +147,25 @@ function init()
 				crow.output[o].volts = Boid.boids[o - 1].value + 2
 			end
 			redraw()
+
+			if capturing and frames_captured < frames_to_capture then
+				frames_captured = frames_captured + 1
+				_norns.screen_export_png(string.format('/tmp/landframes/%04d.png', frames_captured))
+				if frames_captured >= frames_to_capture then
+					print('done')
+				end
+			end
 		end
 	}
 	frame_metro:start()
+	capture(256)
+end
+
+function capture(frames)
+	frames_to_capture = frames or 128
+	os.execute('mkdir -p /tmp/landframes')
+	frames_captured = 0
+	capturing = true
 end
 
 function draw_cursor()
