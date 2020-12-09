@@ -57,8 +57,11 @@ end
 --- change something
 function Surface:edit(point, o, delta)
 	local mesh = self.octaves[o].mesh
-	mesh:edit(self:transform_screen_point(point, o), delta / self.octaves[o].level)
-	map.needs_update = true
+	if self.octaves[o].level ~= 0 then
+		delta = util.clamp(delta / self.octaves[o].level, -1, 1)
+		mesh:edit(self:transform_screen_point(point, o), delta)
+		map.needs_update = true
+	end
 end
 
 return Surface
