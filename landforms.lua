@@ -177,9 +177,10 @@ function draw_cursor()
 	screen.level(8)
 	screen.fill()
 	-- point cursor
+	local width = util.round((max.x - min.x) / 3, 2) + 1
 	screen.aa(1)
-	screen.circle(cursor.x, cursor.y, (max.x - min.x) / 4)
-	screen.level(2)
+	screen.rect(cursor.x - width / 2, cursor.y - width / 2, width, width)
+	screen.level(3)
 	screen.stroke()
 end
 
