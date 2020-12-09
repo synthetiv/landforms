@@ -105,7 +105,7 @@ end
 function Boid:update_position()
 	self.velocity = self.next_velocity
 	self.position = self.position + self.velocity
-	self.ground_level = surface:sample(self.position)
+	self.ground_level = surface:sample(self.position, Mesh.interpolate_smoother)
 	self.scope:sample(self.position.z)
 end
 

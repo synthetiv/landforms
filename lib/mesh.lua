@@ -67,28 +67,54 @@ function Mesh.interpolate_smoother(a, b, x)
 	return Mesh.interpolate_linear(a, b, x)
 end
 
---- get value at point (x, y)
-function Mesh:sample(point, interpolation)
-	-- choose interpolation style
-	interpolation = interpolation or 'linear'
-	interpolate = Mesh['interpolate_' .. interpolation]
+--- get neighbor coordinates on a unit grid
+function Mesh:get_neighbors(point)
 	-- get corner coordinates
 	local xl = self:wrap(math.floor(point.x))
 	local xh = self:wrap(xl + 1)
 	local yl = self:wrap(math.floor(point.y))
 	local yh = self:wrap(yl + 1)
+	-- get distance from top left corner (functionally the same as `point - Vec2.new(xl, yl)`)
+	local distance = point % 1
+	return xl, xh, yl, yh, distance
+end
+
+--- interpolate in 2D between four values, assigned adjacent points on a unit grid:
+--  A (0, 0) | B (1, 0)
+-- ----------+----------
+--  D (0, 1) | C (1, 1)
+function Mesh.interpolate2d(a, b, c, d, distance, interpolation_function)
+	-- choose interpolation style
+	interpolation_function = interpolation_function or Mesh.interpolate_linear
+	-- interpolate vertically
+	local l = interpolation_function(a, d, distance.y)
+	local r = interpolation_function(b, c, distance.y)
+	-- interpolate horizontally
+	return interpolation_function(l, r, distance.x)
+end
+
+--- get value at point (x, y)
+function Mesh:sample(point, interpolation_function)
+	local xl, xh, yl, yh, distance = self:get_neighbors(point)
 	-- get dot products
 	local dot_a = self:get_point_dot_product(point, xl, yl)
 	local dot_b = self:get_point_dot_product(point, xh, yl)
 	local dot_c = self:get_point_dot_product(point, xh, yh)
 	local dot_d = self:get_point_dot_product(point, xl, yh)
-	-- get distance for interpolation
-	local distance = point % 1
-	-- interpolate vertically
-	local dot_l = interpolate(dot_a, dot_d, distance.y)
-	local dot_r = interpolate(dot_b, dot_c, distance.y)
-	-- interpolate horizontally
-	return interpolate(dot_l, dot_r, distance.x)
+	-- interpolate!
+	return Mesh.interpolate2d(dot_a, dot_b, dot_c, dot_d, distance, interpolation_function)
+end
+
+--- get 2D vector derivative at point (x, y)
+function Mesh:sample_slope(point, interpolation_function)
+	local xl, xh, yl, yh, distance = self:get_neighbors(point)
+	-- get node gradients
+	local gradient_a = self.nodes[xl][yl]
+	local gradient_b = self.nodes[xh][yl]
+	local gradient_c = self.nodes[xh][yh]
+	local gradient_d = self.nodes[xl][yh]
+	-- interpolate!
+	return Mesh.interpolate2d(gradient_a, gradient_b, gradient_c, gradient_d, distance, interpolation_function)
 end
 
 --- change nodes to increase/decrease value at point (x, y)
