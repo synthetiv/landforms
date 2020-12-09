@@ -95,7 +95,6 @@ function Mesh:edit(point, delta)
 	-- change nearby nodes' angles to be perpendicular to the angle of `point - node`
 	-- for a lower value at `point`, node gradient vector to node-point vector angle should be math.pi/2 (clockwise)
 	-- for a higher value, angle should be -math.pi/2 (counterclockwise)
-	local target_angle = math.pi / 2
 	for x_offset = 0, 1 do
 		for y_offset = 0, 1 do
 			local x = self:wrap(xl + x_offset)
@@ -104,7 +103,7 @@ function Mesh:edit(point, delta)
 			distance_vector:wrap_to_square_bipolar(self.width)
 			local node = self.nodes[x][y]
 			local proximity = math.max(0, 1 - distance_vector.magnitude)
-			node = node:rotate_to(distance_vector.angle + target_angle, delta * proximity)
+			node = node:rotate_to(distance_vector.angle, delta * proximity)
 			node:rectangularize() -- otherwise map:update() get slower as more polar vectors are added
 			self.nodes[x][y] = node
 		end

@@ -134,6 +134,10 @@ function Vector:rectangularize()
 end
 
 function Vector:get_dot_product(other)
+	return self.x * other.x + self.y * other.y
+end
+
+function Vector:get_cross_product(other)
 	return self.x * other.y - other.x * self.y
 end
 
