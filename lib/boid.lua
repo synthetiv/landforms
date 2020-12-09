@@ -66,11 +66,10 @@ function Boid:update_velocity()
 		steering = steering + (flock_velocity - self.velocity) / 128
 	end
 	-- gravitate toward the probe
-	local probe_projection = Vec3.new(probe.position.x, probe.position.y, self.position.y)
+	local probe_projection = Vec3.new(probe.position.x, probe.position.y, self.position.z)
 	steering = steering + (probe_projection - self.position) / 128
 	-- maintain a set distance from the ground
 	-- TODO: without also limiting overall z-axis travel, this is pretty weird
-	-- oh, also they're being pulled between the probe z and their own, which isn't good
 	steering.z = steering.z + (self.ground_level + self.altitude - self.position.z) / 32
 	-- limit steering angle
 	-- TODO: clean this up! it's lifted practically verbatim from OpenSteering
