@@ -13,9 +13,9 @@ Boid.max_speed = 3
 
 function Boid.new(x, y)
 	local boid = {
-		position = Vector.new(x, y),
-		velocity = Vector.new(0, 0),
-		next_velocity = Vector.new(0, 0),
+		position = Vec2.new(x, y),
+		velocity = Vec2.new(0, 0),
+		next_velocity = Vec2.new(0, 0),
 		value = 0,
 		scope = Scope.new(1 + 0.1 * Boid.n_boids)
 	}
@@ -27,8 +27,8 @@ end
 --- compute a boid's velocity for the next frame
 function Boid:update_velocity()
 	self.next_velocity = self.velocity
-	local flock_position = Vector.new(0, 0)
-	local flock_velocity = Vector.new(0, 0)
+	local flock_position = Vec2.new(0, 0)
+	local flock_velocity = Vec2.new(0, 0)
 	local n_neighbors = 0
 	for i, other in ipairs(Boid.boids) do
 		if other ~= self then

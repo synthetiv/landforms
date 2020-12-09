@@ -21,7 +21,7 @@ function Mesh:randomize()
 	for x = 1, self.width do
 		for y = 1, self.width do
 			local angle = math.random() * tau
-			local node = Vector.new_polar(1, angle)
+			local node = Vec2.new_polar(1, angle)
 			node:rectangularize()
 			self.nodes[x][y] = node
 		end
@@ -36,7 +36,7 @@ end
 --- compute the dot product between `node`'s random vector and the distance between `node` and (x, y)
 function Mesh:get_point_dot_product(point, node_x, node_y)
 	local node = self.nodes[node_x][node_y]
-	local distance = point - Vector.new(node_x, node_y)
+	local distance = point - Vec2.new(node_x, node_y)
 	distance:wrap_to_square_bipolar(self.width)
 	return distance:get_dot_product(node)
 end
@@ -99,7 +99,7 @@ function Mesh:edit(point, delta)
 		for y_offset = 0, 1 do
 			local x = self:wrap(xl + x_offset)
 			local y = self:wrap(yl + y_offset)
-			local distance_vector = (point - Vector.new(x, y))
+			local distance_vector = (point - Vec2.new(x, y))
 			distance_vector:wrap_to_square_bipolar(self.width)
 			local node = self.nodes[x][y]
 			local proximity = math.max(0, 1 - distance_vector.magnitude)

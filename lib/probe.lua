@@ -5,7 +5,7 @@ Probe.__index = Probe
 
 function Probe.new()
 	local probe = {
-		position = Vector.new(0, 0),
+		position = Vec2.new(0, 0),
 		bpr = 1/4,
 		angle = 0,
 		radius = 23,

@@ -2,7 +2,7 @@
 
 test = include 'test'
 
-Vector = include 'lib/vector'
+Vec2 = include 'lib/vec2'
 Surface = include 'lib/surface'
 Map = include 'lib/map'
 Probe = include 'lib/probe'
@@ -23,11 +23,11 @@ map = Map.new(3, screen_width, screen_height)
 probe = Probe.new()
 scope = Scope.new(1.3)
 
-cursor = Vector.new(half_width, half_height)
+cursor = Vec2.new(half_width, half_height)
 cursor_octave = 3
 cursor_bounds = {
-	min = Vector.new(half_width, half_height),
-	max = Vector.new(half_width, half_height)
+	min = Vec2.new(half_width, half_height),
+	max = Vec2.new(half_width, half_height)
 }
 
 held_keys = { false, false, false }
@@ -157,8 +157,8 @@ function draw_cursor()
 	-- but always animate
 	local xl = math.floor(mesh_cursor.x)
 	local yl = math.floor(mesh_cursor.y)
-	local min = surface:transform_mesh_point(Vector.new(xl, yl), cursor_octave)
-	local max = surface:transform_mesh_point(Vector.new(xl + 1, yl + 1), cursor_octave)
+	local min = surface:transform_mesh_point(Vec2.new(xl, yl), cursor_octave)
+	local max = surface:transform_mesh_point(Vec2.new(xl + 1, yl + 1), cursor_octave)
 	cursor_bounds.min = cursor_bounds.min + (min - cursor_bounds.min) * 0.75
 	cursor_bounds.max = cursor_bounds.max + (max - cursor_bounds.max) * 0.75
 	min = cursor_bounds.min

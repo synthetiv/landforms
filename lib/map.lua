@@ -10,15 +10,15 @@ Map.dissolution_matrix = {
 	size = 9,
 	width = 3,
 	height = 3,
-	Vector.new(0, 0),
-	Vector.new(1, 2),
-	Vector.new(2, 1),
-	Vector.new(1, 0),
-	Vector.new(0, 2),
-	Vector.new(2, 0),
-	Vector.new(0, 1),
-	Vector.new(2, 2),
-	Vector.new(1, 1)
+	Vec2.new(0, 0),
+	Vec2.new(1, 2),
+	Vec2.new(2, 1),
+	Vec2.new(1, 0),
+	Vec2.new(0, 2),
+	Vec2.new(2, 0),
+	Vec2.new(0, 1),
+	Vec2.new(2, 2),
+	Vec2.new(1, 1)
 }
 
 function Map.new(sample_size, width, height)
@@ -74,7 +74,7 @@ function Map:update()
 			for row = 1, rows do
 				local x = point.x + (col - 1) * matrix.width
 				local y = point.y + (row - 1) * matrix.height
-				self:set(x, y, surface:sample(Vector.new(x, y) * self.density))
+				self:set(x, y, surface:sample(Vec2.new(x, y) * self.density))
 			end
 		end
 		coroutine.yield()
@@ -118,7 +118,7 @@ function Map:draw()
 	for x = 1, mesh.width do
 		for y = 1, mesh.width do
 			local node = mesh.nodes[x][y]
-			local v = Vector.new(node.x, node.y)
+			local v = Vec2.new(node.x, node.y)
 			v.magnitude = 7
 			screen.move(x / density, y / density)
 			screen.line_rel(v.x, v.y)

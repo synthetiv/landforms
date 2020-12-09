@@ -29,7 +29,7 @@ function Surface:add_mesh(sample_size, offset, level)
 	self.octaves[self.n_octaves] = {
 		mesh = Mesh.new(mesh_width),
 		density = 1 / sample_size,
-		offset = Vector.new(offset, offset),
+		offset = Vec2.new(offset, offset),
 		level = level
 	}
 end

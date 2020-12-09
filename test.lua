@@ -1,7 +1,7 @@
 -- landforms: test
 
 Mesh = include 'lib/mesh'
-Vector = include 'lib/vector'
+Vec2 = include 'lib/vec2'
 
 function assert_equal(a, b)
 	if type(a) == 'number' then
@@ -56,15 +56,15 @@ end
 function tests.sample_noise()
 	local m = Mesh.new(8, 4)
 	-- should always be zero at nodes
-	assert_equal(0, m:sample(Vector.new(1, 1)))
-	assert_equal(0, m:sample(Vector.new(1, 2)))
+	assert_equal(0, m:sample(Vec2.new(1, 1)))
+	assert_equal(0, m:sample(Vec2.new(1, 2)))
 	-- don't actually assert this, it will be a random value:
-	-- assert_equal(0, m:sample(Vector.new(1.5, 1.5)))
+	-- assert_equal(0, m:sample(Vec2.new(1.5, 1.5)))
 end
 
 function tests.vector_math()
-	local v1 = Vector.new(0, 0)
-	local v2 = Vector.new(2, 3)
+	local v1 = Vec2.new(0, 0)
+	local v2 = Vec2.new(2, 3)
 	local v3 = v1 + v2
 	assert_equal(2, v3.x)
 	assert_equal(3, v3.y)
@@ -75,33 +75,33 @@ function tests.vector_math()
 end
 
 function tests.vector_wrapping()
-	local v1 = Vector.new(1, 1)
+	local v1 = Vec2.new(1, 1)
 	v1:wrap_to_square(3)
 	assert_equal(1, v1.x)
 	assert_equal(1, v1.y)
 	v1:wrap_to_square_bipolar(3)
 	assert_equal(1, v1.x)
 	assert_equal(1, v1.y)
-	local v2 = Vector.new(3, 3)
+	local v2 = Vec2.new(3, 3)
 	v2:wrap_to_square(2)
 	assert_equal(1, v2.x)
 	assert_equal(1, v2.y)
-	local v3 = Vector.new(4, 5)
+	local v3 = Vec2.new(4, 5)
 	v3:wrap_to_square_bipolar(3)
 	assert_equal(1, v3.x)
 	assert_equal(-1, v3.y)
 end
 
 function tests.vector_angles()
-	local v1 = Vector.new(1, 0)
+	local v1 = Vec2.new(1, 0)
 	assert_equal(0, v1.angle)
-	local v2 = Vector.new(1, 1)
+	local v2 = Vec2.new(1, 1)
 	assert_equal(math.pi / 4, v2.angle)
-	local v3 = Vector.new(0, 1)
+	local v3 = Vec2.new(0, 1)
 	assert_equal(math.pi / 2, v3.angle)
-	local v4 = Vector.new(-1, -1)
+	local v4 = Vec2.new(-1, -1)
 	assert_equal(math.pi * 5 / 4, v4.angle)
-	local v5 = Vector.new(1, -1)
+	local v5 = Vec2.new(1, -1)
 	assert_equal(math.pi * 7 / 4, v5.angle)
 	local v6 = v1:rotate(math.pi)
 	assert_equal(-1, v6.x)
@@ -120,7 +120,7 @@ function tests.vector_angles()
 end
 
 function tests.vector_rotation_to()
-	local v1 = Vector.new_polar(1, 0)
+	local v1 = Vec2.new_polar(1, 0)
 	local v2 = v1:rotate_to(2, 0.5)
 	assert_equal(1, v2.angle, 1)
 	local v3 = v1:rotate_to(math.pi, 0.5)
@@ -135,12 +135,12 @@ end
 
 function tests.vector_rotation_to_rectangular()
 	-- same as above, but using rectangular coordinates internally
-	local v1 = Vector.new(1, 0)
+	local v1 = Vec2.new(1, 0)
 	local v2 = v1:rotate_to(2, 0.5)
 	assert_equal(1, v2.angle, 1)
 	local v3 = v1:rotate_to(math.pi, 0.5)
 	assert_equal(math.pi * 3 / 2, v3.angle)
-	v3 = Vector.new(v3.x, v3.y)
+	v3 = Vec2.new(v3.x, v3.y)
 	local v4 = v3:rotate_to(math.pi, 0.5)
 	assert_equal(math.pi * 5 / 4, v4.angle)
 	local v5 = v1:rotate_to(math.pi / 2, 1)
