@@ -45,15 +45,14 @@ function Surface:transform_mesh_point(point, o)
 end
 
 --- read value [-1, 1] at a point
-function Surface:sample_raw(point, interpolation_function, sample_function)
-	sample_function = sample_function or Mesh.sample
+function Surface:sample_raw(point, interpolation_function)
 	local value = 0
 	for o, octave in ipairs(self.octaves) do
 		if point == nil then
 			error()
 			return
 		end
-		value = value + sample_function(octave.mesh, self:transform_screen_point(point, o), interpolation_function) * octave.level
+		value = value + octave.mesh:sample(self:transform_screen_point(point, o), interpolation_function) * octave.level
 	end
 	return value
 end

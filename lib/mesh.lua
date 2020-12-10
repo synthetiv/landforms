@@ -105,18 +105,6 @@ function Mesh:sample(point, interpolation_function)
 	return Mesh.interpolate2d(dot_a, dot_b, dot_c, dot_d, distance, interpolation_function)
 end
 
---- get 2D vector derivative at point (x, y)
-function Mesh:sample_slope(point, interpolation_function)
-	local xl, xh, yl, yh, distance = self:get_neighbors(point)
-	-- get node gradients
-	local gradient_a = self.nodes[xl][yl]
-	local gradient_b = self.nodes[xh][yl]
-	local gradient_c = self.nodes[xh][yh]
-	local gradient_d = self.nodes[xl][yh]
-	-- interpolate!
-	return Mesh.interpolate2d(gradient_a, gradient_b, gradient_c, gradient_d, distance, interpolation_function)
-end
-
 --- change nodes to increase/decrease value at point (x, y)
 function Mesh:edit(point, delta)
 	-- get corner coordinates
