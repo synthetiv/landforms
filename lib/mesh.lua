@@ -85,7 +85,7 @@ end
 --  D (0, 1) | C (1, 1)
 function Mesh.interpolate2d(a, b, c, d, distance, interpolation_function)
 	-- choose interpolation style
-	interpolation_function = interpolation_function or Mesh.interpolate_linear
+	interpolation_function = interpolation_function or Mesh.interpolate_smoother
 	-- interpolate vertically
 	local l = interpolation_function(a, d, distance.y)
 	local r = interpolation_function(b, c, distance.y)

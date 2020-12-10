@@ -22,7 +22,7 @@ function Probe:rotate(beats)
 	self.angle = self.angle % tau
 	self.position.x = math.cos(self.angle) * self.radius + screen_width / 2
 	self.position.y = math.sin(self.angle) * self.radius + screen_height / 2
-	self.ground_level = surface:sample(self.position, Mesh.interpolate_smoother)
+	self.ground_level = surface:sample(self.position)
 	self.position.z = self.ground_level + self.altitude
 end
 

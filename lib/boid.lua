@@ -106,7 +106,7 @@ end
 function Boid:update_position()
 	self.velocity = self.next_velocity
 	self.position = self.position + self.velocity
-	self.ground_level = surface:sample(self.position, Mesh.interpolate_smoother)
+	self.ground_level = surface:sample(self.position)
 	local lift = (self.ground_level + self.altitude - self.position.z) / 4
 	self.position.z = self.position.z + lift
 	-- TODO: can't tell if this is good or not; should probably listen
