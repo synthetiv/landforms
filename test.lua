@@ -11,8 +11,11 @@ function assert_equal(a, b)
 		b = util.round(b, 0.0001)
 	end
 	if a ~= b then
-		-- local _, caller_name = debug.getupvalue(debug.getinfo(3).func, 1)
-		error(debug.traceback(string.format('expected %s, got %s', a, b), 2))
+		-- get the value of the 'name' upvalue 3 levels up, i.e. in init()
+		local _, test_name = debug.getupvalue(debug.getinfo(3).func, 1)
+		-- `error(..., 2)` throws the error in the test function instead of right here,
+		-- so the line in the debug message will indicate which assert failed
+		error(string.format('TEST FAILED (%s): expected %s, got %s', test_name, line, a, b), 2)
 	end
 end
 
