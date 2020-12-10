@@ -9,8 +9,8 @@ Boid.boids = {}
 
 Boid.attraction_distance = 32
 Boid.repulsion_distance = 18
-Boid.cos_max_steering_angle = math.cos(math.pi / 3)
-Boid.perpdist = math.sqrt(1 - Boid.cos_max_steering_angle * Boid.cos_max_steering_angle) -- TODO: rename this and explain yourself
+Boid.cos_max_steering_angle = math.cos(math.pi / 5)
+Boid.sin_max_steering_angle = math.sin(math.pi / 5)
 Boid.max_acceleration = 1
 Boid.max_speed = 3
 
@@ -56,43 +56,44 @@ function Boid:update_velocity()
 	end
 	if n_neighbors > 0 then
 		-- scale avoidance factor
-		steering = steering / 2
+		steering = steering / 4
 		-- average neighbor positions and velocities
 		flock_position = flock_position / n_neighbors
 		flock_velocity = flock_velocity / n_neighbors
 		-- gravitate toward flock center
 		steering = steering + (flock_position - self.position) / 64
 		-- match flock velocity
-		steering = steering + (flock_velocity - self.velocity) / 128
+		steering = steering + (flock_velocity - self.velocity) / 64
 	end
 	-- gravitate toward the probe
 	local probe_projection = Vec3.new(probe.position.x, probe.position.y, self.position.z)
-	steering = steering + (probe_projection - self.position) / 128
-	-- maintain a set distance from the ground
-	-- TODO: without also limiting overall z-axis travel, this is pretty weird
-	steering.z = steering.z + (self.ground_level + self.altitude - self.position.z) / 32
+	steering = steering + (probe_projection - self.position) / 64
 	-- limit steering angle
-	-- TODO: clean this up! it's lifted practically verbatim from OpenSteering
 	local steering_magnitude = steering.magnitude
 	if steering_magnitude ~= 0 then
+		-- normalize to unit vectors
 		local steering_direction = steering / steering_magnitude
 		local current_direction = self.velocity / self.velocity.magnitude
+		-- get the cosine of the angle between them
 		local dot = steering_direction:get_dot_product(current_direction)
-		if dot < Boid.cos_max_steering_angle then -- TODO: this is cos(angle between dir and steering); tweak it
-			local parallel = current_direction * dot
-			local perpendicular = steering_direction - parallel
+		if dot < Boid.cos_max_steering_angle then
+			-- get the component of the steering direction perpendicular to the
+			-- current heading, and normalize it
+			local perpendicular = steering_direction - current_direction * dot
 			perpendicular = perpendicular / perpendicular.magnitude
+			-- we now have a right triangle whose hypotenuse is the normalized steering direction,
+			-- one of whose legs is a portion of the current direction
+			-- (or parallel to it, however you prefer to think of it).
+			-- the other leg is longer than the radius of the max steering cone,
+			-- so we need to reduce it, then increase the length of the other leg to
+			-- hold the hypotenuse length of 1 constant.
 			local c0 = current_direction * Boid.cos_max_steering_angle
-			local c1 = perpendicular * Boid.perpdist
+			local c1 = perpendicular * Boid.sin_max_steering_angle
+			-- reapply original magnitude
 			steering = (c0 + c1) * steering_magnitude
 		end
 	end
-	-- limit acceleration
-	-- local acceleration = steering.magnitude
-	-- if acceleration > Boid.max_acceleration then
-		-- steering = steering * (Boid.max_speed / acceleration)
-	-- end
-	-- apply steering to velocity
+	-- apply steering to current velocity
 	self.next_velocity = self.velocity + steering
 	-- limit overall velocity
 	local speed = self.next_velocity.magnitude
@@ -106,6 +107,10 @@ function Boid:update_position()
 	self.velocity = self.next_velocity
 	self.position = self.position + self.velocity
 	self.ground_level = surface:sample(self.position, Mesh.interpolate_smoother)
+	local lift = (self.ground_level + self.altitude - self.position.z) / 4
+	self.position.z = self.position.z + lift
+	-- TODO: can't tell if this is good or not; should probably listen
+	-- self.velocity.z = self.velocity.z + lift
 	self.scope:sample(self.position.z)
 end
 

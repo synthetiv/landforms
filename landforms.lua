@@ -147,7 +147,7 @@ function init()
 				crow.output[o].volts = Boid.boids[o - 1].value + 2
 			end
 			redraw()
-
+			--[[
 			if capturing and frames_captured < frames_to_capture then
 				frames_captured = frames_captured + 1
 				_norns.screen_export_png(string.format('/tmp/landframes/%04d.png', frames_captured))
@@ -155,6 +155,7 @@ function init()
 					print('done')
 				end
 			end
+			--]]
 		end
 	}
 	frame_metro:start()
