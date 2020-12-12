@@ -15,7 +15,7 @@ function assert_equal(a, b)
 		local _, test_name = debug.getupvalue(debug.getinfo(3).func, 1)
 		-- `error(..., 2)` throws the error in the test function instead of right here,
 		-- so the line in the debug message will indicate which assert failed
-		error(string.format('TEST FAILED (%s): expected %s, got %s', test_name, line, a, b), 2)
+		error(string.format('TEST FAILED (%s): expected %s, got %s', test_name, a, b), 2)
 	end
 end
 
@@ -140,7 +140,7 @@ function tests.vector_rotation_to_rectangular()
 	-- same as above, but using rectangular coordinates internally
 	local v1 = Vec2.new(1, 0)
 	local v2 = v1:rotate_to(2, 0.5)
-	assert_equal(1, v2.angle, 1)
+	assert_equal(1, v2.angle)
 	local v3 = v1:rotate_to(math.pi, 0.5)
 	assert_equal(math.pi * 3 / 2, v3.angle)
 	v3 = Vec2.new(v3.x, v3.y)
