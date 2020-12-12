@@ -9,6 +9,14 @@ Map = include 'lib/map'
 Probe = include 'lib/probe'
 Boid = include 'lib/boid'
 Scope = include 'lib/scope'
+Ratio = include 'lib/ratio'
+Scala = include 'lib/scala'
+Scale = include 'lib/scale'
+Voice = include 'lib/voice'
+
+engine.name = 'PolySub'
+polysub = require 'we/lib/polysub'
+voice_id = 0
 
 screen_width = 128
 screen_height = 64
@@ -34,7 +42,7 @@ cursor_bounds = {
 held_keys = { false, false, false }
 
 for i = 1, 3 do
-	Boid.new(screen_width / 2 + (math.random() - 0.5) * 30, screen_height / 2 + (math.random() - 0.5) * 30, (math.random() - 0.5) * 20 + 10)
+	Boid.new(screen_width / 2 + (math.random() - 0.5) * 30, screen_height / 2 + (math.random() - 0.5) * 30, (math.random() - 0.5) * 30 + 10)
 end
 
 probe_clock = nil
@@ -126,14 +134,32 @@ function init()
 		}
 	end
 	
+	params:add_separator('polysub')
+
+	polysub.params()
+
+	params:set('shape', 0.6)
+	params:set('timbre', 0.6)
+	params:set('hzlag', 0.015)
+	params:set('cut', 13)
+	params:set('level', 0.05)
+
 	probe_clock = clock.run(function()
-		local tick = clock.get_beats()
-		local last_tick = 0
+		local beats = clock.get_beats()
+		local beat = 0
+		local last_beat = 0
 		while true do
 			clock.sync(1 / 32)
-			tick = clock.get_beats()
-			probe:rotate(tick - last_tick)
-			last_tick = tick
+			beats = clock.get_beats()
+			last_beat = beat
+			beat = math.floor(beats + 0.5)
+			probe:set_rotation(beats)
+			if beat ~= last_beat then
+				probe:call()
+			end
+			for b = 1, Boid.n_boids do
+				Boid.boids[b]:call()
+			end
 		end
 	end)
 	
@@ -184,7 +210,7 @@ function draw_cursor()
 	-- cell edges
 	screen.rect(min.x + 0.5, min.y + 0.5, max.x - min.x, max.y - min.y)
 	screen.aa(0)
-	screen.blend_mode('add')
+	screen.line_width(1)
 	screen.level(1)
 	screen.stroke()
 	-- corners
@@ -205,7 +231,7 @@ end
 function redraw()
 	screen.clear()
 	screen.aa(1)
-	screen.blend_mode('default')
+	screen.blend_mode('add')
 
 	map:draw()
 	Boid.draw_all()
@@ -213,7 +239,7 @@ function redraw()
 	-- scope:draw(1.3, 7)
 	-- Boid.draw_scopes(1, 4)
 	draw_cursor()
-	
+
 	screen.update()
 end
 

@@ -45,9 +45,7 @@ function Scope:draw(width, level)
 	screen.line_join('bevel')
 	screen.line_width(width)
 	screen.level(level)
-	screen.blend_mode('add')
 	screen.stroke()
-	screen.blend_mode('default')
 end
 
 return Scope

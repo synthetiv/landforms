@@ -20,10 +20,12 @@ function Boid.new(x, y, z)
 		velocity = Vec3.new(0, 0, 0),
 		next_velocity = Vec3.new(0, 0, 0),
 		ground_level = 0,
-		altitude = 10,
+		altitude = z,
 		value = 0,
-		scope = Scope.new(1 + 0.1 * Boid.n_boids)
+		scope = Scope.new(1 + 0.1 * Boid.n_boids),
+		voice = Voice.new()
 	}
+	boid.voice:mute()
 	Boid.n_boids = Boid.n_boids + 1
 	Boid.boids[Boid.n_boids] = boid
 	return setmetatable(boid, Boid)
@@ -107,11 +109,28 @@ function Boid:update_position()
 	self.velocity = self.next_velocity
 	self.position = self.position + self.velocity
 	self.ground_level = surface:sample(self.position)
-	local lift = (self.ground_level + self.altitude - self.position.z) / 4
+	local lift = (self.ground_level + self.altitude - self.position.z) / 2
 	self.position.z = self.position.z + lift
 	-- TODO: can't tell if this is good or not; should probably listen
 	-- self.velocity.z = self.velocity.z + lift
 	self.scope:sample(self.position.z)
+end
+
+--- make a sound
+function Boid:call()
+	self.voice:start(self.position)
+end
+
+function Boid.mute_all()
+	for i, boid in ipairs(Boid.boids) do
+		boid.voice:mute()
+	end
+end
+
+function Boid.unmute_all()
+	for i, boid in ipairs(Boid.boids) do
+		boid.voice:unmute()
+	end
 end
 
 --- update all boids
