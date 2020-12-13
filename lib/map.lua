@@ -145,7 +145,7 @@ function Map:draw()
 			else
 				value = math.floor(value * 15 + 0.5)
 			end
-			screen.pixel(self.offset.x + x * self.sample_size, self.offset.y + y * self.sample_size)
+			screen.rect(self.offset.x + x * self.sample_size, self.offset.y + y * self.sample_size, 1, 1)
 			screen.level(value)
 			screen.fill()
 		end
