@@ -25,7 +25,6 @@ function Boid.new(x, y, z)
 		scope = Scope.new(1 + 0.1 * Boid.n_boids),
 		voice = Voice.new()
 	}
-	boid.voice:mute()
 	Boid.n_boids = Boid.n_boids + 1
 	Boid.boids[Boid.n_boids] = boid
 	return setmetatable(boid, Boid)

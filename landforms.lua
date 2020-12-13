@@ -143,6 +143,8 @@ function init()
 	params:set('hzlag', 0.015)
 	params:set('cut', 13)
 	params:set('level', 0.05)
+	
+	Boid.mute_all()
 
 	probe_clock = clock.run(function()
 		local beats = clock.get_beats()
