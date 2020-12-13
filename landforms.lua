@@ -27,16 +27,18 @@ n_octaves = 4
 bpr_labels = { '16', '12', '8', '6', '4', '3',  '2', '1', '1/2', '1/4' }
 bpr_values = { 1/16, 1/12, 1/8, 1/6, 1/4, 1/3, 1/2,    1,     2,     4 }
 
-surface = Surface.new(screen_width)
+surface = Surface.new(4)
 map = Map.new(3, screen_width, screen_height)
 probe = Probe.new()
 scope = Scope.new(1.3)
 
 cursor = Vec2.new(half_width, half_height)
-cursor_octave = 3
+cursor_octave = 4
 cursor_bounds = {
 	min = Vec2.new(half_width, half_height),
-	max = Vec2.new(half_width, half_height)
+	min_smooth = Vec2.new(half_width, half_height),
+	max = Vec2.new(half_width, half_height),
+	max_smooth = Vec2.new(half_width, half_height)
 }
 
 held_keys = { false, false, false }
@@ -62,7 +64,7 @@ function enc(n, d)
 		end
 	elseif held_keys[3] then
 		if n == 3 then
-			surface:edit(cursor, cursor_octave, d * -0.1)
+			surface:edit(map:transform_screen_point_to_surface(cursor), cursor_octave, d * -0.1)
 		end
 	else
 		if n == 2 then
@@ -198,17 +200,24 @@ function capture(frames)
 end
 
 function draw_cursor()
-	local mesh_cursor = surface:transform_screen_point(cursor, cursor_octave)
-	-- TODO: xl/yl hysteresis: don't move bounds until cursor fully crosses them,
-	-- but always animate
+	-- TODO: redesign the cursor -- showing nodes/grid is important but editing causes a lot of changes outside the larger square drawn here
+	local mesh_cursor = map:transform_screen_point_to_mesh(cursor, cursor_octave)
 	local xl = math.floor(mesh_cursor.x)
 	local yl = math.floor(mesh_cursor.y)
-	local min = surface:transform_mesh_point(Vec2.new(xl, yl), cursor_octave)
-	local max = surface:transform_mesh_point(Vec2.new(xl + 1, yl + 1), cursor_octave)
-	cursor_bounds.min = cursor_bounds.min + (min - cursor_bounds.min) * 0.75
-	cursor_bounds.max = cursor_bounds.max + (max - cursor_bounds.max) * 0.75
-	min = cursor_bounds.min
-	max = cursor_bounds.max
+	cursor_bounds.min = map:transform_mesh_point_to_screen(Vec2.new(xl, yl), cursor_octave)
+	cursor_bounds.max = map:transform_mesh_point_to_screen(Vec2.new(xl + 1, yl + 1), cursor_octave)
+	-- round to 3px so outline lines up with grid points
+	cursor_bounds.min:round(3)
+	cursor_bounds.max:round(3)
+	-- match map offset
+	cursor_bounds.min = cursor_bounds.min + map.offset
+	cursor_bounds.max = cursor_bounds.max + map.offset
+	-- smooth
+	cursor_bounds.min_smooth = cursor_bounds.min_smooth + (cursor_bounds.min - cursor_bounds.min_smooth) * 0.75
+	cursor_bounds.max_smooth = cursor_bounds.max_smooth + (cursor_bounds.max - cursor_bounds.max_smooth) * 0.75
+	-- shorthand
+	min = cursor_bounds.min_smooth
+	max = cursor_bounds.max_smooth
 	-- cell edges
 	screen.rect(min.x + 0.5, min.y + 0.5, max.x - min.x, max.y - min.y)
 	screen.aa(0)

@@ -7,7 +7,7 @@ function Probe.new()
 	local probe = {
 		position = Vec3.new(screen_width / 2, screen_height / 2, 10),
 		ground_level = 0,
-		altitude = 3,
+		altitude = 0,
 		bpr = 1/8,
 		angle = 0,
 		radius = 23,

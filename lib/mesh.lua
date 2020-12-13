@@ -8,7 +8,7 @@ function Mesh.new(width)
 		width = width,
 		nodes = {}
 	}
-	for x = 1, width do
+	for x = 0, width - 1 do
 		mesh.nodes[x] = {}
 	end
 	setmetatable(mesh, Mesh)
@@ -18,8 +18,8 @@ end
 
 --- assign each node a unit vector with a random angle
 function Mesh:randomize()
-	for x = 1, self.width do
-		for y = 1, self.width do
+	for x = 0, self.width - 1 do
+		for y = 0, self.width - 1 do
 			local angle = math.random() * tau
 			local node = Vec2.new_polar(1, angle)
 			node:rectangularize()
@@ -30,7 +30,7 @@ end
 
 --- wrap to [1, w]
 function Mesh:wrap(n)
-	return (n - 1) % self.width + 1
+	return n % self.width
 end
 
 --- compute the dot product between `node`'s random vector and the distance between `node` and (x, y)

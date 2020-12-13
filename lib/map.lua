@@ -21,19 +21,22 @@ Map.dissolution_matrix = {
 	Vec2.new(1, 1)
 }
 
-function Map.new(sample_size, width, height)
+function Map.new(sample_size)
 	local map = {
 		sample_size = sample_size,
-		width = math.ceil(width / sample_size),
-		height = math.ceil(height / sample_size),
-		density = surface.width * sample_size / width,
+		density = 1 / sample_size,
+		offset = Vec2.new(math.floor((screen_width % sample_size) / 2), math.floor((screen_height % sample_size) / 2)),
 		samples = {},
 		needs_update = true,
 		doing_update = false,
 		coroutine = nil,
 		coroutine_status = 'dead'
 	}
-	for x = 1, width do
+	map.dissolution_cols = math.ceil(screen_width / sample_size / Map.dissolution_matrix.width)
+	map.dissolution_rows = math.ceil(screen_height / sample_size / Map.dissolution_matrix.height)
+	map.width = map.dissolution_cols * Map.dissolution_matrix.width
+	map.height = map.dissolution_rows * Map.dissolution_matrix.height
+	for x = 0, map.width - 1 do
 		map.samples[x] = {}
 	end
 	setmetatable(map, Map)
@@ -43,8 +46,8 @@ end
 
 --- reset all samples
 function Map:clear()
-	for x = 1, self.width do
-		for y = 1, self.height do
+	for x = 0, self.width - 1 do
+		for y = 0, self.height - 1 do
 			self.samples[x][y] = 0
 		end
 	end
@@ -52,12 +55,52 @@ end
 
 --- get a sample
 function Map:get(x, y)
-	return self.samples[x + 1][y + 1]
+	return self.samples[x][y]
 end
 
 --- set a sample
 function Map:set(x, y, value)
-	self.samples[x + 1][y + 1] = value
+	self.samples[x][y] = value
+end
+
+--- transform a point in screen space to a point in map space
+function Map:transform_screen_point_to_map(point)
+	return (point - self.offset) * self.density
+end
+
+--- transform a point in map space to a point in screen space
+function Map:transform_map_point_to_screen(point)
+	return point / self.density + self.offset
+end
+
+--- transform a point in map space to a point in surface space
+function Map:transform_map_point_to_surface(point)
+	return point * self.density / surface.width
+end
+
+--- transform a point in surface space to a point in map space
+function Map:transform_surface_point_to_map(point)
+	return point / self.density * surface.width
+end
+
+--- transform a point in screen space to a point in surface space
+function Map:transform_screen_point_to_surface(point)
+	return point * surface.width / screen_width
+end
+
+--- transform a point in surface space to a point in screen space
+function Map:transform_surface_point_to_screen(point)
+	return point * screen_width / surface.width
+end
+
+--- transform a point in screen space to a point in mesh space
+function Map:transform_screen_point_to_mesh(point, o)
+	return surface:transform_surface_point_to_mesh(point * surface.width / screen_width, o)
+end
+
+--- transform a point in screen space to a point in mesh space
+function Map:transform_mesh_point_to_screen(point, o)
+	return surface:transform_mesh_point_to_surface(point, o) * screen_width / surface.width
 end
 
 --- update the whole map (must be used in a coroutine)
@@ -65,16 +108,13 @@ end
 function Map:update()
 	self.needs_update = false
 	local matrix = Map.dissolution_matrix
-	-- TODO: might as well precalculate these
-	local cols = math.ceil(self.width / matrix.width)
-	local rows = math.ceil(self.height / matrix.height)
 	for matrix_point = 1, matrix.size do
 		local point = matrix[matrix_point]
-		for col = 1, cols do
-			for row = 1, rows do
-				local x = point.x + (col - 1) * matrix.width
-				local y = point.y + (row - 1) * matrix.height
-				self:set(x, y, surface:sample_raw(Vec2.new(x, y) * self.density))
+		for col = 0, self.dissolution_cols - 1 do
+			for row = 0, self.dissolution_rows - 1 do
+				local x = point.x + col * matrix.width
+				local y = point.y + row * matrix.height
+				self:set(x, y, surface:sample_raw(self:transform_map_point_to_surface(Vec2.new(x, y))))
 			end
 		end
 		coroutine.yield()
@@ -104,9 +144,9 @@ function Map:draw()
 	self:do_update()
 	-- draw
 	for x = 0, self.width - 1 do
-		for y = 0, self.height -1 do
+		for y = 0, self.height - 1 do
 			local value = (self:get(x, y) + 1) / 2
-			screen.pixel(x * self.sample_size, y * self.sample_size)
+			screen.pixel(self.offset.x + x * self.sample_size, self.offset.y + y * self.sample_size)
 			screen.level(util.round(util.clamp(value * value * value, 0, 1) * 15))
 			screen.fill()
 		end

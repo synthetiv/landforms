@@ -40,6 +40,10 @@ function Vec2:__mod(modulus)
 	return Vec2.new(self.x % modulus, self.y % modulus)
 end
 
+function Vec2:__eq(other)
+	return self.x == other.x and self.y == other.y
+end
+
 function Vec2:__tostring()
 	return string.format('(%f, %f)', self.x, self.y)
 end
@@ -143,6 +147,11 @@ end
 
 function Vec2:get_cross_product(other)
 	return self.x * other.y - other.x * self.y
+end
+
+function Vec2:round(quant)
+	self.x = util.round(self.x, quant)
+	self.y = util.round(self.y, quant)
 end
 
 function Vec2:wrap_to_square(min, max)

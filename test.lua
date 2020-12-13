@@ -3,13 +3,22 @@
 Mesh = include 'lib/mesh'
 Vec2 = include 'lib/vec2'
 
+function round_close(n)
+	return util.round(n, 0.0001)
+end
+
+function close_enough(n)
+	if type(n) == 'number' then
+		n = round_close(n)
+	elseif type(n) == 'table' and getmetatable(n) == Vec2 then
+		n = Vec2.new(round_close(n.x), round_close(n.y))
+	end
+	return n
+end
+
 function assert_equal(a, b)
-	if type(a) == 'number' then
-		a = util.round(a, 0.0001)
-	end
-	if type(b) == 'number' then
-		b = util.round(b, 0.0001)
-	end
+	a = close_enough(a)
+	b = close_enough(b)
 	if a ~= b then
 		-- get the value of the 'name' upvalue 3 levels up, i.e. in init()
 		local _, test_name = debug.getupvalue(debug.getinfo(3).func, 1)
@@ -23,9 +32,9 @@ tests = {}
 
 function tests.wrap()
 	local m = Mesh.new(8)
-	assert_equal(8, m:wrap(0))
+	assert_equal(0, m:wrap(0))
 	assert_equal(1, m:wrap(1))
-	assert_equal(8, m:wrap(8))
+	assert_equal(0, m:wrap(8))
 	assert_equal(3, m:wrap(3))
 end
 
@@ -150,6 +159,34 @@ function tests.vector_rotation_to_rectangular()
 	assert_equal(math.pi / 2, v5.angle)
 	local v6 = v1:rotate_to(math.pi / 2, -1)
 	assert_equal(math.pi * 3 / 2, v6.angle)
+end
+
+function tests.surface_transforms()
+	assert_equal(1, surface.octaves[4].density)
+	assert_equal(Vec2.new(-0.5, -0.5), surface:transform_surface_point_to_mesh(Vec2.new(0, 0), 4))
+	assert_equal(Vec2.new(3.5, 1.5), surface:transform_surface_point_to_mesh(Vec2.new(4, 2), 4))
+	assert_equal(8, surface.octaves[1].density)
+	assert_equal(Vec2.new(-0.5, -0.5), surface:transform_surface_point_to_mesh(Vec2.new(0, 0), 1))
+	assert_equal(Vec2.new(7.5, 7.5), surface:transform_surface_point_to_mesh(Vec2.new(1, 1), 1))
+	assert_equal(Vec2.new(31.5, 15.5), surface:transform_surface_point_to_mesh(Vec2.new(4, 2), 1))
+end
+
+function tests.screen_transforms()
+	assert_equal(Vec2.new(0, 0), map:transform_map_point_to_surface(Vec2.new(0, 0)))
+	assert_equal(Vec2.new(3.55555, 0), map:transform_map_point_to_surface(Vec2.new(128/3, 0))) -- rounding error... whatever
+	-- lots of funny offsets below, but mostly I want to be sure transforms are properly reversible
+	assert_equal(Vec2.new(1, 0), map:transform_map_point_to_screen(Vec2.new(0, 0)))
+	assert_equal(Vec2.new(127, 63), map:transform_map_point_to_screen(Vec2.new(42, 21)))
+	assert_equal(Vec2.new(-0.5, -0.5), map:transform_screen_point_to_mesh(Vec2.new(0, 0), 4))
+	assert_equal(Vec2.new(0, 0), map:transform_mesh_point_to_screen(Vec2.new(-0.5, -0.5), 4))
+	assert_equal(Vec2.new(3.5, 1.5), map:transform_screen_point_to_mesh(Vec2.new(128, 64), 4))
+	assert_equal(Vec2.new(128, 64), map:transform_mesh_point_to_screen(Vec2.new(3.5, 1.5), 4))
+	assert_equal(Vec2.new(-0.5, -0.5), map:transform_screen_point_to_mesh(Vec2.new(0, 0), 3))
+	assert_equal(Vec2.new(0, 0), map:transform_mesh_point_to_screen(Vec2.new(-0.5, -0.5), 3))
+	assert_equal(Vec2.new(7.5, 3.5), map:transform_screen_point_to_mesh(Vec2.new(128, 64), 3))
+	assert_equal(Vec2.new(128, 64), map:transform_mesh_point_to_screen(Vec2.new(7.5, 3.5), 3))
+	assert_equal(Vec2.new(1.5, 0.5), map:transform_screen_point_to_mesh(Vec2.new(64, 32), 4))
+	assert_equal(Vec2.new(64, 32), map:transform_mesh_point_to_screen(Vec2.new(1.5, 0.5), 4))
 end
 
 -- btw, just for fun... to understand getupvalue()...
