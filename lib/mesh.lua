@@ -40,21 +40,19 @@ function Mesh:get_point_dot_product(point, node_x, node_y)
 		print('nil node', node_x, node_y)
 	end
 	local node = self.nodes[node_x][node_y]
-	local distance = point - Vec2.new(node_x, node_y)
+	local distance = Vec2.new(point.x - node_x, point.y - node_y)
 	distance:wrap_to_square_bipolar(self.width)
 	return distance:get_dot_product(node)
 end
 
 --- interpolate between two values
 function Mesh.interpolate_linear(a, b, x)
-	x = util.clamp(x, 0, 1)
 	return a + (b - a) * x
 end
 
 --- interpolate between two values, v2
 -- aka 'smoothstep'
 function Mesh.interpolate_smooth(a, b, x)
-	x = util.clamp(x, 0, 1)
 	x = x * x * (3 - x * 2)
 	return Mesh.interpolate_linear(a, b, x)
 end
@@ -62,7 +60,6 @@ end
 --- interpolate between two values, v3
 -- aka 'smootherstep'
 function Mesh.interpolate_smoother(a, b, x)
-	-- no need to clamp here because sign is retained
 	x = (x * x * x * (x * (x * 6 - 15) + 10))
 	return Mesh.interpolate_linear(a, b, x)
 end

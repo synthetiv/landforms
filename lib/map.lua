@@ -53,16 +53,6 @@ function Map:clear()
 	end
 end
 
---- get a sample
-function Map:get(x, y)
-	return self.samples[x][y]
-end
-
---- set a sample
-function Map:set(x, y, value)
-	self.samples[x][y] = value
-end
-
 --- transform a point in screen space to a point in map space
 function Map:transform_screen_point_to_map(point)
 	return (point - self.offset) * self.density
@@ -114,7 +104,7 @@ function Map:update()
 			for row = 0, self.dissolution_rows - 1 do
 				local x = point.x + col * matrix.width
 				local y = point.y + row * matrix.height
-				self:set(x, y, surface:sample_raw(self:transform_map_point_to_surface(Vec2.new(x, y))))
+				self.samples[x][y] = surface:sample_raw(self:transform_map_point_to_surface(Vec2.new(x, y)))
 			end
 		end
 		coroutine.yield()
@@ -145,9 +135,17 @@ function Map:draw()
 	-- draw
 	for x = 0, self.width - 1 do
 		for y = 0, self.height - 1 do
-			local value = (self:get(x, y) + 1) / 2
+			local value = (self.samples[x][y] + 1) / 2
+			value = value * value * value
+			if value < 0 then
+				value = 0
+			elseif value > 1 then
+				value = 15
+			else
+				value = math.floor(value * 15 + 0.5)
+			end
 			screen.pixel(self.offset.x + x * self.sample_size, self.offset.y + y * self.sample_size)
-			screen.level(util.round(util.clamp(value * value * value, 0, 1) * 15))
+			screen.level(value)
 			screen.fill()
 		end
 	end

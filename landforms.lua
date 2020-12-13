@@ -50,6 +50,18 @@ end
 probe_clock = nil
 redraw_metro = nil
 
+-- screen capture
+capturing = false
+frames_to_capture = 0
+frames_captured = 0
+
+-- profiling
+include 'lib/pepperfish_profiler'
+profiler = newProfiler('time', 10000)
+profiling = false
+profile_end_time = 0
+profile_path = '/home/we/dust/data/landforms/profile.txt'
+
 function crow.add()
 	crow.clear()
 	for o = 1, 4 do
@@ -145,7 +157,9 @@ function init()
 	params:set('hzlag', 0.015)
 	params:set('cut', 13)
 	params:set('level', 0.05)
-	
+
+	profile()
+
 	Boid.mute_all()
 
 	probe_clock = clock.run(function()
@@ -186,6 +200,16 @@ function init()
 				end
 			end
 			--]]
+			if profiling then
+				if profile_end_time < util.time() then
+					profiler:stop()
+					local outfile = io.open(profile_path, 'w+')
+					profiler:report(outfile)
+					outfile:close()
+					print('profile complete', profile_path)
+					profiling = false
+				end
+			end
 		end
 	}
 	frame_metro:start()
@@ -197,6 +221,14 @@ function capture(frames)
 	os.execute('mkdir -p /tmp/landframes')
 	frames_captured = 0
 	capturing = true
+end
+
+function profile(seconds)
+	seconds = seconds or 30
+	profiler:start()
+	profiling = true
+	profile_end_time = util.time() + seconds
+	print('profiling...')
 end
 
 function draw_cursor()
@@ -242,9 +274,11 @@ end
 function redraw()
 	screen.clear()
 	screen.aa(1)
-	screen.blend_mode('add')
 
+	screen.blend_mode('default')
 	map:draw()
+
+	screen.blend_mode('add')
 	Boid.draw_all()
 	probe:draw()
 	-- scope:draw(1.3, 7)
