@@ -34,12 +34,6 @@ scope = Scope.new(1.3)
 
 cursor = Vec2.new(half_width, half_height)
 cursor_octave = 4
-cursor_bounds = {
-	min = Vec2.new(half_width, half_height),
-	min_smooth = Vec2.new(half_width, half_height),
-	max = Vec2.new(half_width, half_height),
-	max_smooth = Vec2.new(half_width, half_height)
-}
 
 held_keys = { false, false, false }
 
@@ -231,40 +225,50 @@ function profile(seconds)
 	print('profiling...')
 end
 
+function profile_stop()
+	profiler:stop()
+	local outfile = io.open(profile_path, 'w+')
+	profiler:report(outfile)
+	outfile:close()
+	print('profile complete', profile_path)
+	profiling = false
+end
+
+function draw_cursor_node(x, y, distance_x, distance_y, node, line_length)
+	local distance = math.max(0, 1 - Vec2.new(distance_x, distance_y).magnitude)
+	local level = math.floor(distance * 15 + 0.5)
+	screen.level(level)
+	x = util.round(x, 3) + 1
+	y = util.round(y, 3)
+	screen.rect(x - 1, y - 1, 3, 3)
+	screen.fill()
+	screen.move(x, y)
+	screen.line_rel(node.x * line_length, node.y * line_length)
+	screen.stroke()
+end
+
 function draw_cursor()
-	-- TODO: redesign the cursor -- showing nodes/grid is important but editing causes a lot of changes outside the larger square drawn here
+	local mesh = surface.octaves[cursor_octave].mesh
 	local mesh_cursor = map:transform_screen_point_to_mesh(cursor, cursor_octave)
 	local xl = math.floor(mesh_cursor.x)
 	local yl = math.floor(mesh_cursor.y)
-	cursor_bounds.min = map:transform_mesh_point_to_screen(Vec2.new(xl, yl), cursor_octave)
-	cursor_bounds.max = map:transform_mesh_point_to_screen(Vec2.new(xl + 1, yl + 1), cursor_octave)
-	-- round to 3px so outline lines up with grid points
-	cursor_bounds.min:round(3)
-	cursor_bounds.max:round(3)
-	-- match map offset
-	cursor_bounds.min = cursor_bounds.min + map.offset
-	cursor_bounds.max = cursor_bounds.max + map.offset
-	-- smooth
-	cursor_bounds.min_smooth = cursor_bounds.min_smooth + (cursor_bounds.min - cursor_bounds.min_smooth) * 0.75
-	cursor_bounds.max_smooth = cursor_bounds.max_smooth + (cursor_bounds.max - cursor_bounds.max_smooth) * 0.75
-	-- shorthand
-	min = cursor_bounds.min_smooth
-	max = cursor_bounds.max_smooth
-	-- cell edges
-	screen.rect(min.x + 0.5, min.y + 0.5, max.x - min.x, max.y - min.y)
-	screen.aa(0)
+	local min = map:transform_mesh_point_to_screen(Vec2.new(xl, yl), cursor_octave)
+	local max = map:transform_mesh_point_to_screen(Vec2.new(xl + 1, yl + 1), cursor_octave)
+	local radius = max.x - min.x
 	screen.line_width(1)
-	screen.level(1)
-	screen.stroke()
-	-- corners
-	screen.pixel(min.x, min.y)
-	screen.pixel(max.x, min.y)
-	screen.pixel(max.x, max.y)
-	screen.pixel(min.x, max.y)
-	screen.level(8)
-	screen.fill()
+	-- screen.circle(cursor.x, cursor.y, radius)
+	-- screen.level(2)
+	-- screen.stroke()
+
+	local xl, xh, yl, yh, distance = mesh:get_neighbors(mesh_cursor)
+	local length = radius / 3 + 2
+	draw_cursor_node(min.x, min.y,     distance.x,     distance.y, mesh.nodes[xl][yl], length)
+	draw_cursor_node(max.x, min.y, 1 - distance.x,     distance.y, mesh.nodes[xh][yl], length)
+	draw_cursor_node(max.x, max.y, 1 - distance.x, 1 - distance.y, mesh.nodes[xh][yh], length)
+	draw_cursor_node(min.x, max.y,     distance.x, 1 - distance.y, mesh.nodes[xl][yh], length)
+
 	-- point cursor
-	local width = util.round((max.x - min.x) / 3, 2) + 1
+	local width = util.round(radius / 3, 2) + 1
 	screen.aa(1)
 	screen.rect(cursor.x - width / 2, cursor.y - width / 2, width, width)
 	screen.level(3)
