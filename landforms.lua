@@ -152,7 +152,7 @@ function init()
 	params:set('cut', 13)
 	params:set('level', 0.05)
 
-	profile()
+	profile_start()
 
 	Boid.mute_all()
 
@@ -196,12 +196,7 @@ function init()
 			--]]
 			if profiling then
 				if profile_end_time < util.time() then
-					profiler:stop()
-					local outfile = io.open(profile_path, 'w+')
-					profiler:report(outfile)
-					outfile:close()
-					print('profile complete', profile_path)
-					profiling = false
+					profile_stop()
 				end
 			end
 		end
@@ -217,7 +212,7 @@ function capture(frames)
 	capturing = true
 end
 
-function profile(seconds)
+function profile_start(seconds)
 	seconds = seconds or 30
 	profiler:start()
 	profiling = true
@@ -298,5 +293,8 @@ function cleanup()
 	end
 	if frame_metro ~= nil then
 		frame_metro:stop()
+	end
+	if _profiler.running then
+		profile_stop()
 	end
 end

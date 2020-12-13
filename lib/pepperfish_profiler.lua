@@ -137,6 +137,7 @@ end
 _profiler.real_coroutine_create = coroutine.create
 
 _profiler.coroutines = {}
+_profiler.main_coroutine = coroutine.running()
 
 -- a handler to wrap coroutine.create and set debug hooks
 function _profiler.coroutine_create( f, ... )
@@ -320,7 +321,8 @@ function _profiler._internal_profile_by_time(self,action)
   local depth = 3
   local at_top = true
   local last_caller
-  local caller = debug.getinfo(depth)
+  local coro = coroutine.running()
+  local caller = debug.getinfo(coro, depth)
   while caller do
     if not caller.func then caller.func = "(tail call)" end
     if self.prevented_functions[caller.func] == nil then
@@ -342,7 +344,12 @@ function _profiler._internal_profile_by_time(self,action)
     end
     depth = depth + 1
     last_caller = caller
-    caller = debug.getinfo(depth)
+    caller = debug.getinfo(coro, depth)
+    if not caller and coro ~= _profiler.main_coroutine then
+      depth = 1
+      coro = _profiler.main_coroutine
+      caller = debug.getinfo(coro, depth)
+    end
   end
   
   self.lastclock = os.clock()

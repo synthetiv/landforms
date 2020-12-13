@@ -39,6 +39,7 @@ function Map.new(sample_size)
 	for x = 0, map.width - 1 do
 		map.samples[x] = {}
 	end
+	map.coroutine_function = function() map:update() end
 	setmetatable(map, Map)
 	map:clear()
 	return map
@@ -116,7 +117,7 @@ end
 function Map:do_update()
 	if self.doing_update or self.needs_update then
 		if not self.doing_update then
-			self.coroutine = coroutine.create(function() self:update() end)
+			self.coroutine = coroutine.create(self.coroutine_function)
 			self.doing_update = true
 		end
 		local success, message = coroutine.resume(self.coroutine)
