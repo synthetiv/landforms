@@ -48,8 +48,6 @@ function Boid:update_velocity()
 				-- if we're too close, move away
 				if distance < Boid.repulsion_distance then
 					steering = steering - 1 / distance_vector
-					-- this is the same as the above, right...?
-					-- steering = steering - distance_vector / distance_vector:get_dot_product(distance_vector)
 				end
 			end
 		end
