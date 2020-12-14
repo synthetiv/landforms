@@ -109,7 +109,7 @@ function init()
 		id = 'radius',
 		name = 'radius',
 		type = 'control',
-		controlspec = controlspec.new(1, 32, 'lin', 0, probe.radius),
+		controlspec = controlspec.new(0.1, 2.2, 'lin', 0, probe.radius),
 		action = function(value)
 			probe.radius = value
 		end
