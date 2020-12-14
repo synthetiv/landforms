@@ -6,6 +6,7 @@ Probe.__index = Probe
 function Probe.new()
 	local probe = {
 		position = Vec3.new(surface.width / 2, surface.width / 4, 0),
+		last_position = Vec3.new(surface.width / 2, surface.width / 4, 0),
 		home = Vec3.new(surface.width / 2, surface.width / 4, 0),
 		ground_level = 0,
 		altitude = 0,
@@ -20,21 +21,29 @@ end
 --- move (change angle from center point)
 function Probe:set_rotation(beats)
 	self.angle = (beats * self.bpr % 1) * tau
-	self.position.x = math.cos(self.angle) * self.radius + self.home.x
-	self.position.y = math.sin(self.angle) * self.radius + self.home.y
+	local cos = math.cos(self.angle)
+	local sin = math.sin(self.angle)
+	self.last_position = self.position
+	self.position = Vec3.new(
+		cos * self.radius + self.home.x,
+		sin * self.radius + self.home.y,
+		0
+	)
 	self.ground_level = surface:sample(self.position)
 	self.position.z = self.ground_level + self.altitude
+	self.heading = Vec2.new(-sin, cos)
 end
 
 --- make a sound
 function Probe:call()
-	self.voice:start(self.position)
+	self.voice:move(self.position)
+	self.voice:play()
 end
 
 --- draw on screen
 function Probe:draw()
 	local position = map:transform_surface_point_to_screen(self.position)
-	local voice_position = map:transform_surface_point_to_screen(self.voice.position)
+	local voice_position = map:transform_surface_point_to_screen(self.voice.position or Vec2.new(2, 1))
 	local now = util.time()
 	local wave_radius = (now - self.voice.last_onset) * 40
 	local wave_level = util.clamp(math.floor(20 / wave_radius + 0.5), 0, 15)

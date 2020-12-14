@@ -104,6 +104,7 @@ end
 --- move a boid
 function Boid:update_position()
 	self.velocity = self.next_velocity
+	self.last_position = self.position
 	self.position = self.position + self.velocity
 	self.ground_level = surface:sample(self.position)
 	local lift = (self.ground_level + self.altitude - self.position.z) / 2
@@ -115,7 +116,8 @@ end
 
 --- make a sound
 function Boid:call()
-	self.voice:start(self.position)
+	self.voice:move(self.position)
+	self.voice:play()
 end
 
 function Boid.mute_all()

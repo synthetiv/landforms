@@ -14,8 +14,7 @@ Scala = include 'lib/scala'
 Scale = include 'lib/scale'
 Voice = include 'lib/voice'
 
-engine.name = 'PolySub'
-polysub = require 'we/lib/polysub'
+engine.name = 'Blips'
 voice_id = 0
 
 screen_width = 128
@@ -142,19 +141,9 @@ function init()
 		}
 	end
 	
-	params:add_separator('polysub')
-
-	polysub.params()
-
-	params:set('shape', 0.6)
-	params:set('timbre', 0.6)
-	params:set('hzlag', 0.015)
-	params:set('cut', 13)
-	params:set('level', 0.05)
-
 	profile_start()
 
-	Boid.mute_all()
+	-- Boid.mute_all()
 
 	probe_clock = clock.run(function()
 		local beats = clock.get_beats()
