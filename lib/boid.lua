@@ -9,9 +9,9 @@ Boid.boids = {}
 
 Boid.attraction_distance = 1
 Boid.repulsion_distance = 0.6
-Boid.cos_max_steering_angle = math.cos(math.pi / 5)
-Boid.sin_max_steering_angle = math.sin(math.pi / 5)
-Boid.max_speed = 0.1
+Boid.cos_max_steering_angle = math.cos(math.pi / 3)
+Boid.sin_max_steering_angle = math.sin(math.pi / 3)
+Boid.max_speed = 0.15
 
 function Boid.new(x, y, z)
 	local boid = {
@@ -66,6 +66,8 @@ function Boid:update_velocity()
 	-- gravitate toward the probe
 	local probe_projection = Vec3.new(probe.position.x, probe.position.y, self.position.z)
 	steering = steering + (probe_projection - self.position) / 64
+	-- try to maintain a set distance from the ground
+	steering.z = steering.z + (self.ground_level + self.altitude - self.position.z) / 16
 	-- limit steering angle
 	local steering_magnitude = steering.magnitude
 	if steering_magnitude ~= 0 then
@@ -107,10 +109,6 @@ function Boid:update_position()
 	self.last_position = self.position
 	self.position = self.position + self.velocity
 	self.ground_level = surface:sample(self.position)
-	local lift = (self.ground_level + self.altitude - self.position.z) / 2
-	self.position.z = self.position.z + lift
-	-- TODO: can't tell if this is good or not; should probably listen
-	-- self.velocity.z = self.velocity.z + lift
 	self.scope:sample(self.position.z)
 end
 

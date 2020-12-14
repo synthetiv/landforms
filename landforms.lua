@@ -37,7 +37,7 @@ cursor_octave = 4
 held_keys = { false, false, false }
 
 for i = 1, 3 do
-	Boid.new(math.random() + 1.5, math.random() + 0.5, math.random() + 0.5)
+	Boid.new(math.random() + 1.5, math.random() + 0.5, 1.5 + i * 0.3)
 end
 
 probe_clock = nil
