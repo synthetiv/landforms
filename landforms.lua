@@ -33,6 +33,8 @@ scope = Scope.new(1.3)
 
 cursor = Vec2.new(half_width, half_height)
 cursor_octave = 4
+cursor_moved = 0
+cursor_level = 0
 
 held_keys = { false, false, false }
 
@@ -66,16 +68,20 @@ function enc(n, d)
 	if held_keys[2] and not held_keys[3] then
 		if n == 2 then
 			cursor_octave = util.clamp(cursor_octave + d, 1, surface.n_octaves)
+			cursor_moved = util.time()
 		end
 	elseif held_keys[3] then
 		if n == 3 then
 			surface:edit(map:transform_screen_point_to_surface(cursor), cursor_octave, d * -0.1)
+			cursor_moved = util.time()
 		end
 	else
 		if n == 2 then
 			cursor.x = util.clamp(cursor.x + d, 0, screen_width)
+			cursor_moved = util.time()
 		elseif n == 3 then
 			cursor.y = util.clamp(cursor.y - d, 0, screen_height)
+			cursor_moved = util.time()
 		end
 	end
 end
@@ -220,7 +226,7 @@ end
 
 function draw_cursor_node(x, y, distance_x, distance_y, node, line_length)
 	local distance = math.max(0, 1 - Vec2.new(distance_x, distance_y).magnitude)
-	local level = math.floor(distance * 15 + 0.5)
+	local level = math.floor(cursor_level * distance * 15 + 0.5)
 	screen.level(level)
 	x = util.round(x, 3) + 1
 	y = util.round(y, 3)
@@ -232,6 +238,10 @@ function draw_cursor_node(x, y, distance_x, distance_y, node, line_length)
 end
 
 function draw_cursor()
+	cursor_level = util.clamp((1.5 + cursor_moved - util.time()) * 4, 0, 1)
+	if cursor_level == 0 then
+		return
+	end
 	local mesh = surface.octaves[cursor_octave].mesh
 	local mesh_cursor = map:transform_screen_point_to_mesh(cursor, cursor_octave)
 	local xl = math.floor(mesh_cursor.x)
@@ -240,9 +250,6 @@ function draw_cursor()
 	local max = map:transform_mesh_point_to_screen(Vec2.new(xl + 1, yl + 1), cursor_octave)
 	local radius = max.x - min.x
 	screen.line_width(1)
-	-- screen.circle(cursor.x, cursor.y, radius)
-	-- screen.level(2)
-	-- screen.stroke()
 
 	local xl, xh, yl, yh, distance = mesh:get_neighbors(mesh_cursor)
 	local length = radius / 3 + 2
@@ -255,7 +262,7 @@ function draw_cursor()
 	local width = util.round(radius / 3, 2) + 1
 	screen.aa(1)
 	screen.rect(cursor.x - width / 2, cursor.y - width / 2, width, width)
-	screen.level(3)
+	screen.level(math.floor(3 * cursor_level + 0.5))
 	screen.stroke()
 end
 
