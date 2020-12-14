@@ -144,7 +144,8 @@ end
 function Boid.draw_all()
 	for i, boid in ipairs(Boid.boids) do
 		local position = map:transform_surface_point_to_screen(boid.position)
-		screen.circle(position.x, position.y, 0.5 + boid.position.z / 2)
+		local size = math.pow(1.5, boid.position.z) * 0.5
+		screen.circle(position.x, position.y, size)
 		screen.level(9)
 		screen.fill()
 	end

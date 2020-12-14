@@ -53,7 +53,8 @@ function Probe:draw()
 		screen.level(wave_level)
 		screen.stroke()
 	end
-	screen.circle(position.x, position.y, 1.5 + self.position.z)
+	local size = math.pow(1.5, self.position.z) * 2.5
+	screen.circle(position.x, position.y, size)
 	screen.level(10)
 	screen.fill()
 end
