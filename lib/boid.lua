@@ -7,12 +7,11 @@ Boid.__index = Boid
 Boid.n_boids = 0
 Boid.boids = {}
 
-Boid.attraction_distance = 32
-Boid.repulsion_distance = 18
+Boid.attraction_distance = 1
+Boid.repulsion_distance = 0.6
 Boid.cos_max_steering_angle = math.cos(math.pi / 5)
 Boid.sin_max_steering_angle = math.sin(math.pi / 5)
-Boid.max_acceleration = 1
-Boid.max_speed = 3
+Boid.max_speed = 0.1
 
 function Boid.new(x, y, z)
 	local boid = {
@@ -57,7 +56,7 @@ function Boid:update_velocity()
 	end
 	if n_neighbors > 0 then
 		-- scale avoidance factor
-		steering = steering / 4
+		steering = steering / 4096
 		-- average neighbor positions and velocities
 		flock_position = flock_position / n_neighbors
 		flock_velocity = flock_velocity / n_neighbors
@@ -91,7 +90,8 @@ function Boid:update_velocity()
 			local c0 = current_direction * Boid.cos_max_steering_angle
 			local c1 = perpendicular * Boid.sin_max_steering_angle
 			-- reapply original magnitude
-			steering = (c0 + c1) * steering_magnitude
+			steering_direction = (c0 + c1)
+			steering = steering_direction * steering_magnitude
 		end
 	end
 	-- apply steering to current velocity
@@ -145,7 +145,8 @@ end
 --- draw all boids on screen
 function Boid.draw_all()
 	for i, boid in ipairs(Boid.boids) do
-		screen.circle(boid.position.x, boid.position.y, 0.5 + boid.position.z / 50)
+		local position = map:transform_surface_point_to_screen(boid.position)
+		screen.circle(position.x, position.y, 0.5 + boid.position.z / 2)
 		screen.level(9)
 		screen.fill()
 	end

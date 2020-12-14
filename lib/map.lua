@@ -105,7 +105,7 @@ function Map:update()
 			for row = 0, self.dissolution_rows - 1 do
 				local x = point.x + col * matrix.width
 				local y = point.y + row * matrix.height
-				self.samples[x][y] = surface:sample_raw(self:transform_map_point_to_surface(Vec2.new(x, y)))
+				self.samples[x][y] = surface:sample(self:transform_map_point_to_surface(Vec2.new(x, y)))
 			end
 		end
 		coroutine.yield()

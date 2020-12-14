@@ -41,7 +41,7 @@ function Surface:transform_mesh_point_to_surface(point, o)
 end
 
 --- read value [-1, 1] at a point
-function Surface:sample_raw(point, interpolation_function)
+function Surface:sample(point, interpolation_function)
 	local value = 0
 	for o, octave in ipairs(self.octaves) do
 		if point == nil then
@@ -51,11 +51,6 @@ function Surface:sample_raw(point, interpolation_function)
 		value = value + octave.mesh:sample(self:transform_surface_point_to_mesh(point, o), interpolation_function) * octave.level
 	end
 	return value
-end
-
---- read value [-32, 32] at a point
-function Surface:sample(point, interpolation_function, sample_function)
-	return self:sample_raw(point, interpolation_function, sample_function) * 32
 end
 
 --- change something

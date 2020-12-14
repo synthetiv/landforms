@@ -18,7 +18,7 @@ function Voice.new()
 end
 
 function Voice:ztof(z)
-	z = self.scale:snap(z / 12)
+	z = self.scale:snap(z * 2)
 	local f = 220 * math.pow(2, z)
 	return f
 end

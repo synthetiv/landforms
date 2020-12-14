@@ -38,7 +38,7 @@ cursor_octave = 4
 held_keys = { false, false, false }
 
 for i = 1, 3 do
-	Boid.new(screen_width / 2 + (math.random() - 0.5) * 30, screen_height / 2 + (math.random() - 0.5) * 30, (math.random() - 0.5) * 30 + 10)
+	Boid.new(math.random() + 1.5, math.random() + 0.5, math.random() + 0.5)
 end
 
 probe_clock = nil
@@ -179,10 +179,10 @@ function init()
 		time = 1 / 16,
 		event = function()
 			Boid.update_all()
-			scope:sample(probe.value)
-			crow.output[1].volts = probe.value + 1
+			scope:sample(probe.position.z)
+			crow.output[1].volts = probe.position.z / 2 + 1
 			for o = 2, 4 do
-				crow.output[o].volts = Boid.boids[o - 1].value + 2
+				crow.output[o].volts = Boid.boids[o - 1].position.z / 2 + 2
 			end
 			redraw()
 			--[[
