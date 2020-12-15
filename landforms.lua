@@ -112,6 +112,12 @@ function init()
 
 	test()
 	
+	Voice.init_all()
+
+	probe.voice:set_modulator_ratio(1.01)
+	probe.voice:set_modulation_index(0.19)
+	probe.voice:set_feedback_index(0.25)
+
 	params:add_separator('probe')
 	
 	params:add{

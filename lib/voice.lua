@@ -1,6 +1,9 @@
 local Voice = {}
 Voice.__index = Voice
 
+Voice.n_voices = 0
+Voice.voices = {}
+
 local next_id = 1
 
 function Voice.new()
@@ -15,6 +18,8 @@ function Voice.new()
 	next_id = next_id + 1
 	setmetatable(voice, Voice)
 	voice:read_scala_file('/home/we/dust/data/fretwork/scales/harmopent.scl')
+	Voice.n_voices = Voice.n_voices + 1
+	Voice.voices[Voice.n_voices] = voice
 	return voice
 end
 
@@ -97,6 +102,12 @@ function Voice:read_scala_file(filename)
 		1.0
 	}
 	self.scale:apply_edits()
+end
+
+function Voice.init_all()
+	for i, voice in ipairs(Voice.voices) do
+		engine.add_voice(voice.id)
+	end
 end
 
 return Voice
