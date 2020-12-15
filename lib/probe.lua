@@ -10,7 +10,7 @@ function Probe.new()
 		home = Vec3.new(surface.width / 2, surface.width / 4, 0),
 		ground_level = 0,
 		altitude = 0,
-		ticks = -1,
+		ticks = math.floor(clock.get_beats() * 32),
 		bpr = 1/8,
 		angle = 0,
 		radius = 0.6,
