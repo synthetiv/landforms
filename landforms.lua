@@ -66,6 +66,7 @@ function crow.add()
 	end
 end
 
+local surface_cursor = Vec2.new()
 function enc(n, d)
 	if held_keys[2] and not held_keys[3] then
 		if n == 2 then
@@ -74,7 +75,8 @@ function enc(n, d)
 		end
 	elseif held_keys[3] then
 		if n == 3 then
-			surface:edit(map:transform_screen_point_to_surface(cursor), cursor_octave, d * -0.1)
+			map:transform_screen_point_to_surface(cursor, surface_cursor)
+			surface:edit(surface_cursor, cursor_octave, d * -0.1)
 			cursor_moved = util.time()
 		end
 	else
@@ -218,7 +220,8 @@ function profile_stop()
 end
 
 function draw_cursor_node(x, y, distance_x, distance_y, node, line_length)
-	local distance = math.max(0, 1 - Vec2.new(distance_x, distance_y).magnitude)
+	local distance = math.sqrt(distance_x * distance_x + distance_y * distance_y)
+	local distance = math.max(0, 1 - distance)
 	local level = math.floor(cursor_level * distance * 15 + 0.5)
 	screen.level(level)
 	x = util.round(x, 3) + 1
@@ -230,26 +233,34 @@ function draw_cursor_node(x, y, distance_x, distance_y, node, line_length)
 	screen.stroke()
 end
 
+local mesh_cursor = Vec2.new()
+local mesh_cursor_min = Vec2.new()
+local mesh_cursor_max = Vec2.new()
+local cursor_min = Vec2.new()
+local cursor_max = Vec2.new()
+local mesh_cursor_distance = Vec2.new()
 function draw_cursor()
 	cursor_level = util.clamp((1.5 + cursor_moved - util.time()) * 4, 0, 1)
 	if cursor_level == 0 then
 		return
 	end
 	local mesh = surface.octaves[cursor_octave].mesh
-	local mesh_cursor = map:transform_screen_point_to_mesh(cursor, cursor_octave)
+	map:transform_screen_point_to_mesh(cursor, cursor_octave, mesh_cursor)
 	local xl = math.floor(mesh_cursor.x)
 	local yl = math.floor(mesh_cursor.y)
-	local min = map:transform_mesh_point_to_screen(Vec2.new(xl, yl), cursor_octave)
-	local max = map:transform_mesh_point_to_screen(Vec2.new(xl + 1, yl + 1), cursor_octave)
-	local radius = max.x - min.x
+	mesh_cursor_min:set(xl, yl)
+	mesh_cursor_max:set(xl + 1, yl + 1)
+	map:transform_mesh_point_to_screen(mesh_cursor_min, cursor_octave, cursor_min)
+	map:transform_mesh_point_to_screen(mesh_cursor_max, cursor_octave, cursor_max)
+	local radius = cursor_max.x - cursor_min.x
 	screen.line_width(1)
 
-	local xl, xh, yl, yh, distance = mesh:get_neighbors(mesh_cursor)
+	local xl, xh, yl, yh = mesh:get_neighbors(mesh_cursor, mesh_cursor_distance)
 	local length = radius / 3 + 2
-	draw_cursor_node(min.x, min.y,     distance.x,     distance.y, mesh.nodes[xl][yl], length)
-	draw_cursor_node(max.x, min.y, 1 - distance.x,     distance.y, mesh.nodes[xh][yl], length)
-	draw_cursor_node(max.x, max.y, 1 - distance.x, 1 - distance.y, mesh.nodes[xh][yh], length)
-	draw_cursor_node(min.x, max.y,     distance.x, 1 - distance.y, mesh.nodes[xl][yh], length)
+	draw_cursor_node(cursor_min.x, cursor_min.y,     mesh_cursor_distance.x,     mesh_cursor_distance.y, mesh.nodes[xl][yl], length)
+	draw_cursor_node(cursor_max.x, cursor_min.y, 1 - mesh_cursor_distance.x,     mesh_cursor_distance.y, mesh.nodes[xh][yl], length)
+	draw_cursor_node(cursor_max.x, cursor_max.y, 1 - mesh_cursor_distance.x, 1 - mesh_cursor_distance.y, mesh.nodes[xh][yh], length)
+	draw_cursor_node(cursor_min.x, cursor_max.y,     mesh_cursor_distance.x, 1 - mesh_cursor_distance.y, mesh.nodes[xl][yh], length)
 
 	-- point cursor
 	local width = util.round(radius / 3, 2) + 1

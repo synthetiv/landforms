@@ -55,47 +55,50 @@ function Map:clear()
 end
 
 --- transform a point in screen space to a point in map space
-function Map:transform_screen_point_to_map(point)
-	return (point - self.offset) * self.density
+function Map:transform_screen_point_to_map(point, result)
+	return result:set(point):sub(self.offset):mul(self.density)
 end
 
 --- transform a point in map space to a point in screen space
-function Map:transform_map_point_to_screen(point)
-	return point / self.density + self.offset
+function Map:transform_map_point_to_screen(point, result)
+	return result:set(point):div(self.density):add(self.offset)
 end
 
 --- transform a point in map space to a point in surface space
-function Map:transform_map_point_to_surface(point)
-	return point * self.density / surface.width
+function Map:transform_map_point_to_surface(point, result)
+	return result:set(point):mul(self.density / surface.width)
 end
 
 --- transform a point in surface space to a point in map space
-function Map:transform_surface_point_to_map(point)
-	return point / self.density * surface.width
+function Map:transform_surface_point_to_map(point, result)
+	return result:set(point):mul(surface.width / self.density)
 end
 
 --- transform a point in screen space to a point in surface space
-function Map:transform_screen_point_to_surface(point)
-	return point * surface.width / screen_width
+function Map:transform_screen_point_to_surface(point, result)
+	return result:set(point):mul(surface.width / screen_width)
 end
 
 --- transform a point in surface space to a point in screen space
-function Map:transform_surface_point_to_screen(point)
-	return point * screen_width / surface.width
+function Map:transform_surface_point_to_screen(point, result)
+	return result:set(point):mul(screen_width / surface.width)
 end
 
 --- transform a point in screen space to a point in mesh space
-function Map:transform_screen_point_to_mesh(point, o)
-	return surface:transform_surface_point_to_mesh(point * surface.width / screen_width, o)
+function Map:transform_screen_point_to_mesh(point, o, result)
+	result:set(point):mul(surface.width / screen_width)
+	return surface:transform_surface_point_to_mesh(result, o, result)
 end
 
 --- transform a point in screen space to a point in mesh space
-function Map:transform_mesh_point_to_screen(point, o)
-	return surface:transform_mesh_point_to_surface(point, o) * screen_width / surface.width
+function Map:transform_mesh_point_to_screen(point, o, result)
+	surface:transform_mesh_point_to_surface(point, o, result)
+	return result:mul(screen_width / surface.width)
 end
 
 --- update the whole map (must be used in a coroutine)
 -- TODO: "shade" instead of just showing "elevation"?
+local sample_point = Vec2.new()
 function Map:update()
 	self.needs_update = false
 	local matrix = Map.dissolution_matrix
@@ -105,7 +108,9 @@ function Map:update()
 			for row = 0, self.dissolution_rows - 1 do
 				local x = point.x + col * matrix.width
 				local y = point.y + row * matrix.height
-				self.samples[x][y] = surface:sample(self:transform_map_point_to_surface(Vec2.new(x, y)))
+				sample_point:set(x, y)
+				self:transform_map_point_to_surface(sample_point, sample_point)
+				self.samples[x][y] = surface:sample(sample_point)
 			end
 		end
 		coroutine.yield()
@@ -150,23 +155,6 @@ function Map:draw()
 			screen.fill()
 		end
 	end
-	--[[
-	-- draw gradient vectors at nodes
-	local mesh = surface.octaves[3].mesh
-	local density = mesh.width / surface.width
-	for x = 1, mesh.width do
-		for y = 1, mesh.width do
-			local node = mesh.nodes[x][y]
-			local v = Vec2.new(node.x, node.y)
-			v.magnitude = 7
-			screen.move(x / density, y / density)
-			screen.line_rel(v.x, v.y)
-			screen.level(15)
-			screen.line_width(0.5)
-			screen.stroke()
-		end
-	end
-	--]]
 end
 
 return Map

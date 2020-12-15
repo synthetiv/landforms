@@ -51,19 +51,21 @@ function Voice:update()
 	self:blip(0, self.frequency, self.bend, self.pan, self.amplitude, self.rolloff)
 end
 
+local direction = Vec3.new()
 function Voice:set_values()
 	self.frequency = self:ztof(self.position.z)
 	self.bend = 1
-	local distance_vector = self.position - probe.position
-	local distance = distance_vector.magnitude
+	direction:set(self.position):sub(probe.position)
+	local distance = direction:get_magnitude()
 	if distance ~= 0 then
-		local direction = distance_vector / distance
+		direction:div(distance)
 		local pan = probe.heading:get_cross_product(direction)
 		self.pan = pan
-		self.amplitude = math.min(0.5, 0.5 / ( 8 * (probe.position - self.position).magnitude))
+		self.amplitude = 0.5 * math.min(1, 1 / (8 * distance))
 		-- TODO: rolloff should respond to distance too,
 		-- and should be closer to zero when pan == 1 or -1
-		local rolloff = probe.heading:get_dot_product(-direction)
+		direction:unm()
+		local rolloff = probe.heading:get_dot_product(direction)
 		self.rolloff = rolloff * 0.5 + 0.5 -- [0, 1]
 	else
 		self.pan = 0

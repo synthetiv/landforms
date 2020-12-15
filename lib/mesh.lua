@@ -22,7 +22,6 @@ function Mesh:randomize()
 		for y = 0, self.width - 1 do
 			local angle = math.random() * tau
 			local node = Vec2.new_polar(1, angle)
-			node:rectangularize()
 			self.nodes[x][y] = node
 		end
 	end
@@ -34,15 +33,12 @@ function Mesh:wrap(n)
 end
 
 --- compute the dot product between `node`'s random vector and the distance between `node` and (x, y)
+local dot_distance = Vec2.new(0, 0)
 function Mesh:get_point_dot_product(point, node_x, node_y)
-	if self.nodes[node_x] == nil or self.nodes[node_x][node_y] == nil then
-		debug.debug()
-		print('nil node', node_x, node_y)
-	end
 	local node = self.nodes[node_x][node_y]
-	local distance = Vec2.new(point.x - node_x, point.y - node_y)
-	distance:wrap_to_square_bipolar(self.width)
-	return distance:get_dot_product(node)
+	dot_distance:set(point.x - node_x, point.y - node_y)
+	dot_distance:wrap_to_square_bipolar(self.width)
+	return dot_distance:get_dot_product(node)
 end
 
 --- interpolate between two values
@@ -65,15 +61,15 @@ function Mesh.interpolate_smoother(a, b, x)
 end
 
 --- get neighbor coordinates on a unit grid
-function Mesh:get_neighbors(point)
+function Mesh:get_neighbors(point, distance)
 	-- get corner coordinates
 	local xl = self:wrap(math.floor(point.x))
 	local xh = self:wrap(xl + 1)
 	local yl = self:wrap(math.floor(point.y))
 	local yh = self:wrap(yl + 1)
 	-- get distance from top left corner (functionally the same as `point - Vec2.new(xl, yl)`)
-	local distance = point % 1
-	return xl, xh, yl, yh, distance
+	distance:set(point):mod(1)
+	return xl, xh, yl, yh
 end
 
 --- interpolate in 2D between four values, assigned adjacent points on a unit grid:
@@ -91,8 +87,9 @@ function Mesh.interpolate2d(a, b, c, d, distance, interpolation_function)
 end
 
 --- get value at point (x, y)
+local distance = Vec2.new()
 function Mesh:sample(point, interpolation_function)
-	local xl, xh, yl, yh, distance = self:get_neighbors(point)
+	local xl, xh, yl, yh = self:get_neighbors(point, distance)
 	-- get dot products
 	local dot_a = self:get_point_dot_product(point, xl, yl)
 	local dot_b = self:get_point_dot_product(point, xh, yl)
@@ -103,6 +100,8 @@ function Mesh:sample(point, interpolation_function)
 end
 
 --- change nodes to increase/decrease value at point (x, y)
+local node_point = Vec2.new()
+local distance_vector = Vec2:new()
 function Mesh:edit(point, delta)
 	-- get corner coordinates
 	local xl = math.floor(point.x)
@@ -114,12 +113,13 @@ function Mesh:edit(point, delta)
 		for y_offset = 0, 1 do
 			local x = self:wrap(xl + x_offset)
 			local y = self:wrap(yl + y_offset)
-			local distance_vector = (point - Vec2.new(x, y))
+			node_point:set(x, y)
+			distance_vector:set(point):sub(node_point)
 			distance_vector:wrap_to_square_bipolar(self.width)
 			local node = self.nodes[x][y]
-			local proximity = math.max(0, 1 - distance_vector.magnitude)
-			node = node:rotate_to(distance_vector.angle, delta * proximity)
-			node:rectangularize() -- otherwise map:update() get slower as more polar vectors are added
+			local magnitude, angle = distance_vector:get_polar()
+			local proximity = math.max(0, 1 - magnitude)
+			node:rotate_to(angle, delta * proximity)
 			self.nodes[x][y] = node
 		end
 	end

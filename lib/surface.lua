@@ -29,16 +29,19 @@ function Surface:add_mesh(width, offset, level)
 end
 
 --- transform a point in surface space to a point in mesh space
-function Surface:transform_surface_point_to_mesh(point, o)
-	return point * self.octaves[o].density - self.octaves[o].offset
+function Surface:transform_surface_point_to_mesh(point, o, result)
+	local octave = self.octaves[o]
+	return result:set(point):mul(octave.density):sub(octave.offset)
 end
 
 --- transform a point in mesh space to a point in screen space
-function Surface:transform_mesh_point_to_surface(point, o)
-	return (point + self.octaves[o].offset) / self.octaves[o].density
+function Surface:transform_mesh_point_to_surface(point, o, result)
+	local octave = self.octaves[o]
+	return result:set(point):add(octave.offset):div(octave.density)
 end
 
 --- read value [-1, 1] at a point
+local sample_point = Vec2.new()
 function Surface:sample(point, interpolation_function)
 	local value = 0
 	for o, octave in ipairs(self.octaves) do
@@ -46,17 +49,20 @@ function Surface:sample(point, interpolation_function)
 			error()
 			return
 		end
-		value = value + octave.mesh:sample(self:transform_surface_point_to_mesh(point, o), interpolation_function) * octave.level
+		self:transform_surface_point_to_mesh(point, o, sample_point)
+		value = value + octave.mesh:sample(sample_point, interpolation_function) * octave.level
 	end
 	return value
 end
 
 --- change something
+local edit_point = Vec2.new()
 function Surface:edit(point, o, delta)
 	local mesh = self.octaves[o].mesh
 	if self.octaves[o].level ~= 0 then
 		delta = util.clamp(delta / self.octaves[o].level, -1, 1)
-		mesh:edit(self:transform_surface_point_to_mesh(point, o), delta)
+		self:transform_surface_point_to_mesh(point, o, edit_point)
+		mesh:edit(edit_point, delta)
 		map.needs_update = true
 	end
 end

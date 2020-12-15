@@ -31,84 +31,106 @@ function Boid.new(x, y, z)
 end
 
 --- compute a boid's velocity for the next frame
+local distance_vector = Vec3.new()
+local steering = Vec3.new()
+local flock_position = Vec3.new()
+local flock_velocity = Vec3.new()
+local probe_distance = Vec3.new()
+local heading = Vec3.new()
+local perpendicular = Vec3.new()
 function Boid:update_velocity()
-	local steering = Vec3.new(0, 0, 0)
-	local flock_position = Vec3.new(0, 0, 0)
-	local flock_velocity = Vec3.new(0, 0, 0)
+	-- initialize scratch variables
+	steering:set(0, 0, 0)
+	flock_position:set(0, 0, 0)
+	flock_velocity:set(0, 0, 0)
+	-- gather data about neighbors
 	local n_neighbors = 0
 	for i, other in ipairs(Boid.boids) do
 		if other ~= self then
-			local distance_vector = other.position - self.position
-			local distance = distance_vector.magnitude
+			distance_vector:set(other.position)
+			distance_vector:sub(self.position)
+			local distance = distance_vector:get_magnitude()
 			if distance < Boid.attraction_distance then
 				-- neighbor alert!
 				n_neighbors = n_neighbors + 1
 				-- add position and velocity so we can average them later
-				flock_position = flock_position + other.position
-				flock_velocity = flock_velocity + other.velocity
+				flock_position:add(other.position)
+				flock_velocity:add(other.velocity)
 				-- if we're too close, move away
 				if distance < Boid.repulsion_distance then
-					steering = steering - 1 / distance_vector
+					distance_vector:set_reciprocal()
+					steering:sub(distance_vector)
 				end
 			end
 		end
 	end
 	if n_neighbors > 0 then
 		-- scale avoidance factor
-		steering = steering / 4096
+		steering:div(4096)
 		-- average neighbor positions and velocities
-		flock_position = flock_position / n_neighbors
-		flock_velocity = flock_velocity / n_neighbors
+		flock_position:div(n_neighbors)
+		flock_velocity:div(n_neighbors)
 		-- gravitate toward flock center
-		steering = steering + (flock_position - self.position) / 64
+		flock_position:sub(self.position)
+		flock_position:div(64)
+		steering:add(flock_position)
 		-- match flock velocity
-		steering = steering + (flock_velocity - self.velocity) / 64
+		flock_velocity:sub(self.velocity)
+		flock_velocity:div(64)
+		steering:add(flock_velocity)
 	end
 	-- gravitate toward the probe
-	local probe_projection = Vec3.new(probe.position.x, probe.position.y, self.position.z)
-	steering = steering + (probe_projection - self.position) / 64
+	probe_distance:set(probe.position.x - self.position.x, probe.position.y - self.position.y, 0)
+	probe_distance:div(64)
+	steering:add(probe_distance)
 	-- try to maintain a set distance from the ground
 	steering.z = steering.z + (self.ground_level + self.altitude - self.position.z) / 16
 	-- limit steering angle
-	local steering_magnitude = steering.magnitude
+	local steering_magnitude = steering:get_magnitude()
 	if steering_magnitude ~= 0 then
 		-- normalize to unit vectors
-		local steering_direction = steering / steering_magnitude
-		local current_direction = self.velocity / self.velocity.magnitude
+		steering:div(steering_magnitude)
+		heading:set(self.velocity)
+		heading:div(heading:get_magnitude())
 		-- get the cosine of the angle between them
-		local dot = steering_direction:get_dot_product(current_direction)
+		local dot = steering:get_dot_product(heading)
 		if dot < Boid.cos_max_steering_angle then
 			-- get the component of the steering direction perpendicular to the
 			-- current heading, and normalize it
-			local perpendicular = steering_direction - current_direction * dot
-			perpendicular = perpendicular / perpendicular.magnitude
+			perpendicular:set(heading)
+			perpendicular:mul(dot)
+			perpendicular:sub(steering)
+			perpendicular:unm()
+			perpendicular:div(perpendicular:get_magnitude())
 			-- we now have a right triangle whose hypotenuse is the normalized steering direction,
 			-- one of whose legs is a portion of the current direction
 			-- (or parallel to it, however you prefer to think of it).
 			-- the other leg is longer than the radius of the max steering cone,
 			-- so we need to reduce it, then increase the length of the other leg to
 			-- hold the hypotenuse length of 1 constant.
-			local c0 = current_direction * Boid.cos_max_steering_angle
-			local c1 = perpendicular * Boid.sin_max_steering_angle
+			steering:set(heading)
+			steering:mul(Boid.cos_max_steering_angle)
+			perpendicular:mul(Boid.sin_max_steering_angle)
+			steering:add(perpendicular)
 			-- reapply original magnitude
-			steering_direction = (c0 + c1)
-			steering = steering_direction * steering_magnitude
+			steering:mul(steering_magnitude)
 		end
 	end
 	-- apply steering to current velocity
-	self.next_velocity = self.velocity + steering
+	self.next_velocity:set(self.velocity)
+	self.next_velocity:add(steering)
 	-- limit overall velocity
-	local speed = self.next_velocity.magnitude
+	local speed = self.next_velocity:get_magnitude()
 	if speed > Boid.max_speed then
-		self.next_velocity = self.next_velocity * (Boid.max_speed / speed)
+		self.next_velocity:mul(Boid.max_speed / speed)
 	end
 end
 
 --- move a boid
 function Boid:update_position()
-	self.velocity = self.next_velocity
-	self.last_position = self.position
-	self.position = self.position + self.velocity
+	self.velocity:set(self.next_velocity)
+	self.last_position:set(self.position)
+	self.position:add(self.velocity)
 	self.ground_level = surface:sample(self.position)
 	self.scope:sample(self.position.z)
 end
@@ -142,9 +164,10 @@ function Boid.update_all()
 end
 
 --- draw all boids on screen
+local position = Vec2.new()
 function Boid.draw_all()
 	for i, boid in ipairs(Boid.boids) do
-		local position = map:transform_surface_point_to_screen(boid.position)
+		map:transform_surface_point_to_screen(boid.position, position)
 		local size = math.pow(1.5, boid.position.z) * 0.5
 		screen.circle(position.x, position.y, size)
 		screen.level(9)

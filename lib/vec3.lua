@@ -1,9 +1,15 @@
 --- a 2D vector with overloaded math operations
 
 local Vec3 = {}
+Vec3.__index = Vec3
+Vec3.callers = {}
+Vec3.count = 0
 
 function Vec3.new(x, y, z)
-	-- print('vec3')
+	local caller = debug.getinfo(2)
+	caller = caller.short_src .. ':' .. caller.currentline
+	Vec3.callers[caller] = (Vec3.callers[caller] or 0) + 1
+	Vec3.count = Vec3.count + 1
 	local vec = {
 		x = x or 0,
 		y = y or 0,
@@ -12,49 +18,86 @@ function Vec3.new(x, y, z)
 	return setmetatable(vec, Vec3)
 end
 
-function Vec3:__add(other)
-	return Vec3.new(self.x + other.x, self.y + other.y, self.z + other.z)
-end
-
-function Vec3:__sub(other)
-	return Vec3.new(self.x - other.x, self.y - other.y, self.z - other.z)
-end
-
-function Vec3:__mul(other)
-	if type(other) == 'table' then
-		return Vec3.new(self.x * other.x, self.y * other.y, self.z * other.z)
-	end
-	return Vec3.new(self.x * other, self.y * other, self.z * other)
-end
-
-function Vec3:__div(other)
-	if type(self) ~= 'table' then -- this looks weird, but `self` is just the LH operand and sometimes it's a scalar
-		return Vec3.new(self / other.x, self / other.y, self / other.z)
-	end
-	if type(other) == 'table' then
-		return Vec3.new(self.x / other.x, self.y / other.y, self.z / other.z)
-	end
-	return Vec3.new(self.x / other, self.y / other, self.z / other)
-end
-
-function Vec3:__unm()
-	return Vec3.new(-self.x, -self.y, -self.z)
-end
-
-function Vec3:__mod(modulus)
-	return Vec3.new(self.x % modulus, self.y % modulus, self.z % modulus)
-end
-
 function Vec3:__tostring()
 	return string.format('(%f, %f, %f)', self.x, self.y, self.z)
 end
 
---- access polar coordinates of a rectangular vector, or vice versa
-function Vec3:__index(index)
-	if index == 'magnitude' then
-		return math.sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
+function Vec3:add(other)
+	self.x = self.x + other.x
+	self.y = self.y + other.y
+	self.z = self.z + other.z
+	return self
+end
+
+function Vec3:sub(other)
+	self.x = self.x - other.x
+	self.y = self.y - other.y
+	self.z = self.z - other.z
+	return self
+end
+
+function Vec3:mul(other)
+	if type(other) == 'table' then
+		self.x = self.x * other.x
+		self.y = self.y * other.y
+		self.z = self.z * other.z
+	else
+		self.x = self.x * other
+		self.y = self.y * other
+		self.z = self.z * other
 	end
-	return Vec3[index]
+	return self
+end
+
+function Vec3:set_reciprocal()
+	self.x = 1 / self.x
+	self.y = 1 / self.y
+	self.z = 1 / self.z
+	return self
+end
+
+function Vec3:div(other)
+	if type(other) == 'table' then
+		self.x = self.x / other.x
+		self.y = self.y / other.y
+		self.z = self.z / other.z
+	else
+		self.x = self.x / other
+		self.y = self.y / other
+		self.z = self.z / other
+	end
+	return self
+end
+
+function Vec3:unm()
+	self.x = -self.x
+	self.y = -self.y
+	self.z = -self.z
+	return self
+end
+
+function Vec3:mod(modulus)
+	self.x = self.x % modulus
+	self.y = self.y % modulus
+	self.z = self.z % modulus
+	return self
+end
+
+--- set this vector's values without creating a new vector
+function Vec3:set(x, y, z)
+	if y == nil and z == nil then
+		x, y, z = x.x, x.y, x.z
+	end
+	self.x, self.y, self.z = x, y, z
+	return self
+end
+
+function Vec3:get()
+	return self.x, self.y, self.z
+end
+
+function Vec3:get_magnitude()
+	return math.sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
 end
 
 function Vec3:get_dot_product(other)
@@ -62,10 +105,6 @@ function Vec3:get_dot_product(other)
 end
 
 function Vec3:wrap_to_square(min, max)
-	if max == nil then
-		max = min
-		min = 1
-	end
 	self.x = (self.x - min) % max + min
 	self.y = (self.y - min) % max + min
 	self.z = (self.z - min) % max + min
