@@ -157,7 +157,7 @@ function init()
 		}
 	end
 	
-	profile_start()
+	-- profile_start()
 
 	-- Boid.mute_all()
 
@@ -198,7 +198,7 @@ function init()
 		end
 	}
 	frame_metro:start()
-	capture(256)
+	-- capture(256)
 end
 
 function capture(frames)
