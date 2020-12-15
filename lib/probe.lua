@@ -10,17 +10,20 @@ function Probe.new()
 		home = Vec3.new(surface.width / 2, surface.width / 4, 0),
 		ground_level = 0,
 		altitude = 0,
+		ticks = -1,
 		bpr = 1/8,
 		angle = 0,
 		radius = 0.6,
 		voice = Voice.new()
 	}
+	probe.pattern = Pattern.new({ 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0 }, function() probe:call() end)
 	return setmetatable(probe, Probe)
 end
 
 --- move (change angle from center point)
-function Probe:set_rotation(beats)
-	self.angle = (beats * self.bpr % 1) * tau
+function Probe:move()
+	local new_ticks = math.floor(clock.get_beats() * 32)
+	self.angle = (new_ticks / 32 * self.bpr % 1) * tau
 	local cos = math.cos(self.angle)
 	local sin = math.sin(self.angle)
 	self.last_position = self.position
@@ -32,6 +35,8 @@ function Probe:set_rotation(beats)
 	self.ground_level = surface:sample(self.position)
 	self.position.z = self.ground_level + self.altitude
 	self.heading = Vec2.new(-sin, cos)
+	self.pattern:advance(new_ticks - self.ticks)
+	self.ticks = new_ticks
 end
 
 --- make a sound

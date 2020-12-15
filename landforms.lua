@@ -6,6 +6,7 @@ Vec2 = include 'lib/vec2'
 Vec3 = include 'lib/vec3'
 Surface = include 'lib/surface'
 Map = include 'lib/map'
+Pattern = include 'lib/pattern'
 Probe = include 'lib/probe'
 Boid = include 'lib/boid'
 Scope = include 'lib/scope'
@@ -152,18 +153,9 @@ function init()
 	-- Boid.mute_all()
 
 	probe_clock = clock.run(function()
-		local beats = clock.get_beats()
-		local beat = 0
-		local last_beat = 0
 		while true do
 			clock.sync(1 / 32)
-			beats = clock.get_beats()
-			last_beat = beat
-			beat = math.floor(beats + 0.5)
-			probe:set_rotation(beats)
-			if beat ~= last_beat then
-				probe:call()
-			end
+			probe:move()
 			for b = 1, Boid.n_boids do
 				Boid.boids[b]:call()
 			end
