@@ -42,7 +42,7 @@ Engine_Blips : CroneEngine {
 				var panned = Pan2.ar(dimmed, \pan.kr(0));
 
 				// feedback send, either from modulator or carrier
-				LocalOut.ar(Select.ar(\feedbackSource.kr(1), [modulator, carrier]));
+				LocalOut.ar(Select.ar(\feedback_source.kr(1), [modulator, carrier]));
 				
 				Out.ar(\out.kr(0), panned * \amplitude.kr(0.5).clip(0, 1) * -12.dbamp);
 			});
