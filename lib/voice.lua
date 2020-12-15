@@ -7,8 +7,8 @@ function Voice.new()
 	local voice = {
 		id = next_id,
 		active = true,
-		position = Vec3.new(0, 0, 0),
-		last_position = Vec3.new(0, 0, 0),
+		position = Vec3.new(),
+		last_position = Vec3.new(),
 		last_onset = 0,
 		scale = Scale.new{ 1 }
 	}

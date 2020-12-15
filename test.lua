@@ -1,7 +1,7 @@
 -- landforms: test
 
-Mesh = include 'lib/mesh'
 Vec2 = include 'lib/vec2'
+Mesh = include 'lib/mesh'
 
 function round_close(n)
 	return util.round(n, 0.0001)

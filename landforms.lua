@@ -4,6 +4,7 @@ test = include 'test'
 
 Vec2 = include 'lib/vec2'
 Vec3 = include 'lib/vec3'
+Mesh = include 'lib/mesh'
 Surface = include 'lib/surface'
 Map = include 'lib/map'
 Pattern = include 'lib/pattern'
@@ -39,9 +40,9 @@ cursor_level = 0
 
 held_keys = { false, false, false }
 
-for i = 1, 3 do
-	Boid.new(math.random() + 1.5, math.random() + 0.5, 1.5 + i * 0.3)
-end
+Boid.new(1.5, 0.5, 1.8)
+Boid.new(2.1, 1.1, 2.1)
+Boid.new(2.3, 1.5, 2.3)
 
 probe_clock = nil
 redraw_metro = nil

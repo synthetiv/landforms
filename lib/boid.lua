@@ -16,8 +16,9 @@ Boid.max_speed = 0.15
 function Boid.new(x, y, z)
 	local boid = {
 		position = Vec3.new(x, y, z),
-		velocity = Vec3.new(0, 0, 0),
-		next_velocity = Vec3.new(0, 0, 0),
+		last_position = Vec3.new(),
+		velocity = Vec3.new(),
+		next_velocity = Vec3.new(),
 		ground_level = 0,
 		altitude = z,
 		value = 0,

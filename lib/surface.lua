@@ -1,7 +1,5 @@
 --- a terrain surface made up of multiple octaves of perlin noise
 
-local Mesh = include 'lib/mesh'
-
 local Surface = {}
 Surface.__index = Surface
 

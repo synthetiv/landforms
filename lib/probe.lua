@@ -16,7 +16,7 @@ function Probe.new()
 		radius = 0.6,
 		voice = Voice.new()
 	}
-	probe.pattern = Pattern.new({ 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0 }, function() probe:call() end)
+	probe.pattern = Pattern.new({ 1, 1, 1, 0, 1, 0, 0, 1 }, function() probe:call() end)
 	return setmetatable(probe, Probe)
 end
 
@@ -48,7 +48,7 @@ end
 --- draw on screen
 function Probe:draw()
 	local position = map:transform_surface_point_to_screen(self.position)
-	local voice_position = map:transform_surface_point_to_screen(self.voice.position or Vec2.new(2, 1))
+	local voice_position = map:transform_surface_point_to_screen(self.voice.position)
 	local now = util.time()
 	local wave_radius = (now - self.voice.last_onset) * 40
 	local wave_level = util.clamp(math.floor(20 / wave_radius + 0.5), 0, 15)

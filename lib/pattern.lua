@@ -5,7 +5,7 @@ function Pattern.new(steps, action)
 	local pattern = {
 		steps = steps,
 		action = action,
-		ticks_per_step = 4,
+		ticks_per_step = 8,
 		tick = 0,
 		step = 0
 	}

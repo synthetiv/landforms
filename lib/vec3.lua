@@ -3,7 +3,13 @@
 local Vec3 = {}
 
 function Vec3.new(x, y, z)
-	return setmetatable({ x = x, y = y, z = z }, Vec3)
+	-- print('vec3')
+	local vec = {
+		x = x or 0,
+		y = y or 0,
+		z = z or 0
+	}
+	return setmetatable(vec, Vec3)
 end
 
 function Vec3:__add(other)
